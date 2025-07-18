@@ -118,7 +118,12 @@ class WorkspacePlugin implements IPluginTempl {
     if (this.canvas.clearHistory) {
       this.canvas.clearHistory();
     }
-    this.auto();
+
+    // Usar setTimeout para asegurar que el DOM esté completamente renderizado
+    // antes de ejecutar la lógica de auto-escala
+    setTimeout(() => {
+      this.auto();
+    }, 100);
   }
 
   // 返回workspace对象
@@ -170,6 +175,13 @@ class WorkspacePlugin implements IPluginTempl {
     const { workspaceEl } = this;
     const width = workspaceEl.offsetWidth;
     const height = workspaceEl.offsetHeight;
+
+    // Validar que el contenedor tenga dimensiones válidas
+    if (!width || !height || width <= 0 || height <= 0) {
+      console.warn('WorkspacePlugin: Container element has invalid dimensions', { width, height });
+      return;
+    }
+
     this.canvas.setWidth(width);
     this.canvas.setHeight(height);
     const center = this.canvas.getCenter();
@@ -180,16 +192,36 @@ class WorkspacePlugin implements IPluginTempl {
 
     // 超出画布不展示
     this.workspace.clone((cloned: fabric.Rect) => {
-      this.canvas.clipPath = cloned;
-      this.canvas.requestRenderAll();
+      // Verificar que el workspace tenga dimensiones válidas antes de usarlo como clipPath
+      if (cloned.width && cloned.height && cloned.width > 0 && cloned.height > 0) {
+        this.canvas.clipPath = cloned;
+        this.canvas.requestRenderAll();
+      } else {
+        console.warn('WorkspacePlugin: Cloned workspace has invalid dimensions', {
+          width: cloned.width,
+          height: cloned.height,
+        });
+      }
     });
     if (cb) cb(this.workspace.left, this.workspace.top);
   }
 
   _getScale() {
+    const containerWidth = this.workspaceEl.offsetWidth;
+    const containerHeight = this.workspaceEl.offsetHeight;
+
+    // Validar que el contenedor tenga dimensiones válidas
+    if (!containerWidth || !containerHeight || containerWidth <= 0 || containerHeight <= 0) {
+      console.warn('WorkspacePlugin: Container has invalid dimensions for scale calculation', {
+        containerWidth,
+        containerHeight,
+      });
+      return 1; // Retornar escala por defecto
+    }
+
     return fabric.util.findScaleToFit(this.getWorkspase(), {
-      width: this.workspaceEl.offsetWidth,
-      height: this.workspaceEl.offsetHeight,
+      width: containerWidth,
+      height: containerHeight,
     });
   }
 
@@ -214,8 +246,16 @@ class WorkspacePlugin implements IPluginTempl {
 
   // 自动缩放
   auto() {
+    // Validar que el workspace y el contenedor existan antes de intentar la escala automática
+    if (!this.workspace || !this.workspaceEl) {
+      console.warn('WorkspacePlugin: Cannot auto-scale, workspace or container element missing');
+      return;
+    }
+
     const scale = this._getScale();
-    this.setZoomAuto(scale * this.zoomRatio);
+    if (scale && scale > 0) {
+      this.setZoomAuto(scale * this.zoomRatio);
+    }
   }
 
   // 1:1 放大

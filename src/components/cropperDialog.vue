@@ -161,8 +161,10 @@ function changeCropperSize(type: 'width' | 'height', value: number) {
 }
 
 function onPreview(_previews) {
-  if (_previews.w === 0 && _previews.h === 0) {
+  // Verificar que las dimensiones sean válidas antes de proceder
+  if (_previews.w === 0 || _previews.h === 0) {
     loading.value = true;
+    return; // Salir temprano si las dimensiones no son válidas
   } else {
     loading.value = false;
   }

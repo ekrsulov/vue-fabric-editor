@@ -6,6 +6,7 @@
  * @LastEditors: 秦少卫
  * @LastEditTime: 2024-07-06 12:15:19
  */
+import { reactive, onMounted, onBeforeUnmount } from 'vue';
 import Editor, { EventType } from '@kuaitu/core';
 import { get } from 'lodash-es';
 
@@ -64,7 +65,7 @@ export default function useSelectListen(canvasEditor: Editor) {
     canvasEditor.on(SelectEvent.CANCEL, selectCancel);
   });
 
-  onBeforeMount(() => {
+  onBeforeUnmount(() => {
     canvasEditor.off(SelectEvent.ONE, selectOne);
     canvasEditor.off(SelectEvent.MULTI, selectMulti);
     canvasEditor.off(SelectEvent.CANCEL, selectCancel);

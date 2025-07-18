@@ -53,12 +53,18 @@ export default function useSelect(matchType?: Array<string>) {
   };
 
   let callBack = () => {
-    //
+    // Default empty callback
   };
   const getObjectAttr = (cb: any) => {
     callBack = cb;
   };
+
   onMounted(() => {
+    // Aumentar el límite de listeners en el canvasEditor si es posible
+    if (canvasEditor.setMaxListeners) {
+      canvasEditor.setMaxListeners(100);
+    }
+
     canvasEditor.on(SelectEvent.ONE, selectOne);
     canvasEditor.on(SelectEvent.MULTI, selectMulti);
     canvasEditor.on(SelectEvent.CANCEL, selectCancel);

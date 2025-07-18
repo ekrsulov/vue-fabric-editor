@@ -36,6 +36,12 @@ class Editor extends EventEmitter {
     [propName: string]: AsyncSeriesHook<any, any>;
   } = {};
 
+  constructor() {
+    super();
+    // Aumentar el límite de listeners para evitar memory leak warnings
+    this.setMaxListeners(50);
+  }
+
   init(canvas: fabric.Canvas) {
     this.canvas = canvas;
     this._initContextMenu();

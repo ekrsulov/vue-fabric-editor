@@ -67,6 +67,11 @@ class FontPlugin implements IPluginTempl {
         this.cacheList = list;
         this.createFontCSS(list);
         return list;
+      })
+      .catch((error) => {
+        console.log('Font API not available, using default fonts');
+        this.cacheList = [];
+        return [];
       });
     return this.tempPromise;
   }

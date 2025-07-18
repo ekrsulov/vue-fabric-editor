@@ -26,10 +26,15 @@ const webInfo = ref({
 });
 
 const getWebInfoFun = async () => {
-  const res = await getWebInfo();
-  const info = pick(res.data.data.attributes, ['name', 'url']);
-  info.img = baseURL + get(res.data, 'data.attributes.logo.data.attributes.url');
-  webInfo.value = info;
+  try {
+    const res = await getWebInfo();
+    const info = pick(res.data.data.attributes, ['name', 'url']);
+    info.img = baseURL + get(res.data, 'data.attributes.logo.data.attributes.url');
+    webInfo.value = info;
+  } catch (error) {
+    // Silently handle API errors in development
+    console.log('API not available, using default logo');
+  }
 };
 
 getWebInfoFun();

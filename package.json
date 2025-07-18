@@ -83,6 +83,11 @@
   "pnpm": {
     "overrides": {
       "@jridgewell/gen-mapping": "0.3.5"
-    }
+    },
+    "ignoredBuiltDependencies": [
+      "canvas",
+      "esbuild",
+      "vue-demi"
+    ]
   }
 }

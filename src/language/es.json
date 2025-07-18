@@ -1,0 +1,263 @@
+{
+  "bgSeting": {
+    "size": "Tamaño",
+    "color": "Color",
+    "colorMacthing": "Combinación de colores",
+    "width": "Ancho",
+    "height": "Alto"
+  },
+  "flip": {
+    "x": "Voltear horizontalmente",
+    "y": "Voltear verticalmente"
+  },
+  "attrSeting": {
+    "group": "Agrupar",
+    "unGroup": "Desagrupar",
+    "flip": {
+      "name": "Voltear",
+      "x": "Voltear horizontalmente",
+      "y": "Voltear verticalmente"
+    },
+    "align": {
+      "name": "Alinear",
+      "left": "Alinear a la izquierda",
+      "centerX": "Centrar horizontalmente",
+      "right": "Alinear a la derecha",
+      "top": "Alinear arriba",
+      "bottom": "Alinear abajo",
+      "centerY": "Centrar verticalmente",
+      "averageX": "Distribuir horizontalmente",
+      "averageY": "Distribuir verticalmente"
+    },
+    "centerAlign": {
+      "name": "Centrar",
+      "centerX": "Centrar horizontalmente",
+      "center": "Centrar horizontal y verticalmente",
+      "centerY": "Centrar verticalmente"
+    }
+  },
+  "color": "Color",
+  "textFloat": "Decimal",
+  "templates": "Plantillas",
+  "elements": "Elementos",
+  "font_style": "Texto",
+  "background": "Fondo",
+  "grid": "Cuadrícula",
+  "placeholder": "Por favor ingresa",
+  "common_elements": "Elementos básicos",
+  "draw_elements": "Elementos de dibujo",
+  "code_img": "Imagen de código de barras",
+  "background_texture": "Textura de fondo",
+  "picture": "Imagen",
+  "everything_is_fine": "Todo está bien",
+  "everything_goes_well": "Todo va bien",
+  "cartoon": "Dibujos animados",
+  "default_size": "Tamaño predefinido",
+  "preview": "Vista previa",
+  "save": {
+    "empty": "Limpiar",
+    "down": "Descargar",
+    "save_my_spase": "Guardar en mi espacio",
+    "save_as_picture": "Imagen PNG",
+    "save_as_svg": "Imagen SVG",
+    "copy_to_clipboard": "Copiar al portapapeles",
+    "copy_to_clipboardstr": "Copiar cadena al portapapeles",
+    "save_as_json": "Guardar como JSON"
+  },
+  "layers": "Capas",
+  "my_spase": {
+    "remove_templ": "Eliminar plantilla",
+    "remove_templTip": "¿Confirmas eliminar la plantilla?",
+    "remove_file_type": "¿Confirmas eliminar la carpeta?",
+    "remove_file_type_Tip": "¿Confirmas eliminar la plantilla?"
+  },
+  "title_template": "Plantilla de título",
+  "insert_svg": "Insertar elemento SVG",
+  "select_svg": "Seleccionar archivo SVG",
+  "please_choose": "Por favor selecciona",
+  "string": "Cadena",
+  "file": "Archivo",
+  "importFiles": {
+    "file": "Archivo",
+    "createDesign": {
+      "title": "Crear diseño",
+      "customSize": "Tamaño personalizado",
+      "systemSize": "Tamaño recomendado del sistema",
+      "width": "Ancho",
+      "height": "Alto",
+      "create": "Confirmar"
+    },
+    "importFiles": "Importar archivos"
+  },
+  "select_json": "Seleccionar archivo JSON",
+  "repleaceImg": "Reemplazar imagen",
+  "cropperImg": "Recortar imagen",
+  "createClip": "Añadir recorte",
+  "removeClip": "Quitar recorte",
+  "polygonClip": "Polígono",
+  "rectClip": "Rectángulo",
+  "circleClip": "Círculo",
+  "triangleClip": "Triángulo",
+  "polygonClipInverted": "Polígono [Invertido]",
+  "rectClipInverted": "Rectángulo [Invertido]",
+  "circleClipInverted": "Círculo [Invertido]",
+  "triangleClipInverted": "Triángulo [Invertido]",
+  "waterMark": {
+    "text": "Marca de agua",
+    "modalTitle": "Configurar marca de agua",
+    "setting": {
+      "name": "Nombre de la marca de agua",
+      "size": "Tamaño de la marca de agua",
+      "color": "Color de la marca de agua",
+      "angle": "Ángulo de la marca de agua",
+      "position": {
+        "label": "Posición de la marca de agua",
+        "lt": "Esquina superior izquierda",
+        "rt": "Esquina superior derecha",
+        "lb": "Esquina inferior izquierda",
+        "rb": "Esquina inferior derecha",
+        "full": "Mosaico"
+      }
+    }
+  },
+  "material": {
+    "cartoon": "Material"
+  },
+  "filters": {
+    "simple": "Filtros simples",
+    "complex": "Filtros complejos",
+    "Invert": "Invertir",
+    "Sepia": "Sepia",
+    "BlackWhite": "Blanco y negro",
+    "Brownie": "Chocolate",
+    "Vintage": "Vintage",
+    "Kodachrome": "Película",
+    "technicolor": "Vivo",
+    "Polaroid": "Resalte",
+    "Grayscale": "Escala de grises",
+    "GrayscaleList": {
+      "average": "General",
+      "lightness": "Medio",
+      "luminosity": "Brillante"
+    },
+    "RemoveColor": "Quitar color",
+    "Brightness": "Brillo",
+    "Contrast": "Contraste",
+    "Saturation": "Saturación",
+    "Vibrance": "Vibración",
+    "HueRotation": "Tono",
+    "Noise": "Ruido",
+    "Pixelate": "Pixelar",
+    "Blur": "Desenfocar",
+    "Gamma": "Ajustar"
+  },
+  "quick": {
+    "del": "Eliminar",
+    "copy": "Copiar",
+    "lock": "Bloquear",
+    "unlock": "Desbloquear",
+    "hide": "Ocultar",
+    "editPoly": "Editar polígono"
+  },
+  "insertFile": {
+    "insert": "Insertar",
+    "insert_picture": "Insertar imagen",
+    "insert_SVG": "Insertar elemento SVG",
+    "insert_SVGStr": "Insertar cadena SVG",
+    "insert_PSD": "Insertar PSD",
+    "insert_SVGStr_placeholder": "Por favor ingresa la cadena SVG",
+    "modal_tittle": "Por favor ingresa"
+  },
+  "history": {
+    "revocation": "Deshacer",
+    "redo": "Rehacer"
+  },
+  "upload_background": "Subir fondo",
+  "mouseMenu": {
+    "layer": "Gestión de capas",
+    "copy": "Copiar",
+    "delete": "Eliminar",
+    "group": "Agrupar",
+    "unGroup": "Desagrupar",
+    "up": "Subir una capa",
+    "down": "Bajar una capa",
+    "upTop": "Mover al frente",
+    "downTop": "Mover al fondo",
+    "center": "Centrar horizontal y verticalmente"
+  },
+  "alert": {
+    "loading_fonts": "Cargando fuentes, por favor espera...",
+    "loading_fonts_failed": "Error al cargar fuentes, ¡por favor inténtalo de nuevo!",
+    "loading_fonts_success": "¡Fuentes cargadas exitosamente!",
+    "loading_data": "Cargando datos...",
+    "select_image": "Por favor selecciona una imagen de fondo",
+    "select_file": "Por favor selecciona un archivo",
+    "copied_sucessful": "Copiado exitosamente",
+    "fail_copy": "Error al copiar"
+  },
+  "scenary_x": "Escenario {number}",
+  "red_book_vertical": "Libro rojo vertical",
+  "red_book_horizontal": "Libro rojo horizontal",
+  "phone_wallpaper": "Fondo de pantalla del teléfono",
+  "attributes": {
+    "id": "Identificador",
+    "linkData": "Asociar",
+    "font": "Fuente",
+    "align": "Alinear",
+    "bold": "Negrita:",
+    "italic": "Cursiva:",
+    "underline": "Subrayado:",
+    "stroke": "Borde",
+    "swipe_up": "Deslizar arriba:",
+    "line_height": "Altura de línea",
+    "char_spacing": "Espaciado",
+    "exterior": "Apariencia",
+    "angle": "Rotar",
+    "left": "Eje X",
+    "top": "Eje Y",
+    "opacity": "Transparencia",
+    "shadow": "Sombra",
+    "blur": "Desenfocar",
+    "offset_x": "Eje X",
+    "offset_y": "Eje Y",
+    "borderRadiusX": "Radio horizontal del borde",
+    "borderRadiusY": "Radio vertical del borde",
+    "rx_ry": "Radio"
+  },
+  "setSizeTip": "Ajustar tamaño del lienzo",
+  "tip": "Consejo",
+  "clearTip": "¿Estás seguro de que quieres limpiar?",
+  "replaceTip": "¿Estás seguro de que quieres añadir al lienzo?",
+  "ok": "Confirmar",
+  "cancel": "Cancelar",
+  "cleanUp": "Limpiar",
+  "login": {
+    "title": "Bienvenido",
+    "welcome": "Bienvenido a FastGraph",
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "identifier": "Nombre de usuario",
+    "username": "Nombre de usuario",
+    "password": "Contraseña",
+    "email": "Correo electrónico",
+    "identifierValidate": "Por favor ingresa el nombre de usuario",
+    "passwordValidate": "Por favor ingresa una contraseña de más de 6 caracteres",
+    "emailValidate": "Por favor ingresa una dirección de correo electrónico válida",
+    "logoutTip": "¿Estás seguro de que quieres cerrar sesión?",
+    "logoutSuccessTip": "Sesión cerrada exitosamente"
+  },
+  "myMaterial": {
+    "uploadBtn": "Subir material"
+  },
+  "admin": {
+    "btnTitle": "Administrar",
+    "setToken": "Configurar Token",
+    "save": "Guardar",
+    "create": "Crear nuevo",
+    "addTempl": "Añadir plantilla",
+    "addTemplPlaceholder": "Por favor ingresa el nombre de la plantilla",
+    "addTemplCheckTip": "El nombre de la plantilla no puede estar vacío"
+  },
+  "mine": "Mío",
+  "batch": "Por lotes"
+}

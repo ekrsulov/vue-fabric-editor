@@ -68,7 +68,7 @@ import downIcon from '@/assets/icon/layer/down.svg?raw';
 import upTopIcon from '@/assets/icon/layer/upTop.svg?raw';
 import downTopIcon from '@/assets/icon/layer/downTop.svg?raw';
 
-const { canvasEditor, isOne, fabric, mixinState } = useSelect();
+const { canvasEditor, isOne, fabric, mixinState, t } = useSelect();
 
 const list = ref([]);
 
@@ -97,15 +97,15 @@ const textType = (type, item) => {
     return item.name || item.text;
   }
   const typeText = {
-    group: '组合',
-    image: '图片',
-    rect: '矩形',
-    circle: '圆形',
-    triangle: '三角形',
-    polygon: '多边形',
-    path: '路径',
+    group: t('group'),
+    image: t('image'),
+    rect: t('rectangle'),
+    circle: t('circle'),
+    triangle: t('triangle'),
+    polygon: t('polygon'),
+    path: t('path'),
   };
-  return typeText[type] || '默认元素';
+  return typeText[type] || t('defaultElement');
 };
 // 选中元素
 const select = (id) => {

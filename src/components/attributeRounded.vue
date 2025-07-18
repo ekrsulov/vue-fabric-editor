@@ -8,7 +8,9 @@
 <template>
   <div class="box attr-item-box" v-if="isOne && isMatchType">
     <!-- <h3>圆角</h3> -->
-    <Divider plain orientation="left"><h4>圆角</h4></Divider>
+    <Divider plain orientation="left">
+      <h4>{{ $t('cornerRadius') }}</h4>
+    </Divider>
     <!-- 通用属性 -->
     <div>
       <Row :gutter="10">
@@ -41,7 +43,7 @@
 import useSelect from '@/hooks/select';
 
 const update = getCurrentInstance();
-const { canvasEditor, isOne, isMatchType } = useSelect(['rect']);
+const { canvasEditor, isOne, isMatchType, t } = useSelect(['rect']);
 
 // 属性值
 const baseAttr = reactive({

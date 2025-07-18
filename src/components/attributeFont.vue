@@ -9,7 +9,9 @@
 <template>
   <div class="box attr-item-box" v-if="isOne && isMatchType">
     <!-- <h3>字体属性</h3> -->
-    <Divider plain orientation="left"><h4>字体属性</h4></Divider>
+    <Divider plain orientation="left">
+      <h4>{{ $t('fontProperties') }}</h4>
+    </Divider>
     <div>
       <!-- <Divider plain orientation="left">{{ $t('attributes.font') }}</Divider> -->
       <div class="flex-view">
@@ -29,7 +31,7 @@
             <InputNumber
               v-model="baseAttr.fontSize"
               @on-change="(value) => changeCommon('fontSize', value)"
-              append="字号"
+              :append="$t('fontSize')"
               :min="1"
             ></InputNumber>
           </div>
@@ -139,7 +141,7 @@ const update = getCurrentInstance();
 
 // 文字元素
 const textType = ['i-text', 'textbox', 'text'];
-const { canvasEditor, isMatchType, isOne } = useSelect(textType);
+const { canvasEditor, isMatchType, isOne, t } = useSelect(textType);
 
 // 属性值
 const baseAttr = reactive({

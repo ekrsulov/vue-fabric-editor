@@ -9,7 +9,7 @@
 <template>
   <div v-if="isOne && state.type === 'image'" class="box">
     <Divider plain orientation="left">
-      <h4>图片滤镜</h4>
+      <h4>{{ $t('imageFilter') }}</h4>
     </Divider>
     <Collapse>
       <Panel name="1">
@@ -86,7 +86,7 @@
 import useSelect from '@/hooks/select';
 import { uiType, paramsFilters, combinationFilters } from '@/config/constants/filter';
 
-const { fabric, isOne, canvasEditor } = useSelect();
+const { fabric, isOne, canvasEditor, t } = useSelect();
 const update = getCurrentInstance();
 // 无参数滤镜
 const noParamsFilters = {

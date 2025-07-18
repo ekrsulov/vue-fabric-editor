@@ -9,11 +9,13 @@
 <template>
   <div class="box attr-item-box" v-if="isOne && isMatchType && isBarcode">
     <!-- <h3>字体属性</h3> -->
-    <Divider plain orientation="left"><h4>条形码属性</h4></Divider>
+    <Divider plain orientation="left">
+      <h4>{{ $t('barcodeProperties') }}</h4>
+    </Divider>
     <div>
       <div class="flex-view">
         <div class="flex-item">
-          <span class="label">代码</span>
+          <span class="label">{{ $t('code') }}</span>
           <div class="content">
             <Input v-model="baseAttr.value" @on-change="changeCommon" />
           </div>
@@ -31,7 +33,7 @@
 
       <div class="flex-view">
         <div class="flex-item">
-          <span class="label">显示</span>
+          <span class="label">{{ $t('display') }}</span>
           <div class="content">
             <Switch v-model="baseAttr.displayValue" @on-change="changeCommon" />
           </div>
@@ -64,7 +66,7 @@
 
       <div class="flex-view">
         <div class="flex-item">
-          <span class="label">条码</span>
+          <span class="label">{{ $t('barcode') }}</span>
           <div class="content">
             <ColorPicker v-model="baseAttr.lineColor" @on-change="changeCommon" alpha />
           </div>
@@ -74,7 +76,7 @@
             <InputNumber
               v-model="baseAttr.fontSize"
               @on-change="changeCommon"
-              append="字号"
+              :append="$t('fontSize')"
               :min="1"
             ></InputNumber>
           </div>
@@ -82,13 +84,13 @@
       </div>
       <div class="flex-view">
         <div class="flex-item">
-          <span class="label">背景</span>
+          <span class="label">{{ $t('barcodeBackground') }}</span>
           <div class="content">
             <ColorPicker v-model="baseAttr.background" @on-change="changeCommon" alpha />
           </div>
         </div>
         <div class="flex-item">
-          <span class="label" style="margin-left: 10px">类型</span>
+          <span class="label" style="margin-left: 10px">{{ $t('type') }}</span>
           <div class="content">
             <Select v-model="baseAttr.format" @on-change="changeCommon" style="width: 90px">
               <Option v-for="item in barcodeTypeList" :value="item" :key="item">
@@ -113,7 +115,7 @@ import right from '@/assets/icon/barcode/right.svg?raw';
 import center from '@/assets/icon/barcode/center.svg?raw';
 
 const update = getCurrentInstance();
-const { isOne, canvasEditor, isMatchType } = useSelect(['image']);
+const { isOne, canvasEditor, isMatchType, t } = useSelect(['image']);
 
 // 文字元素
 const extensionType = ref('');

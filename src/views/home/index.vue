@@ -138,21 +138,30 @@ onMounted(() => {
     .use(MaskPlugin);
 
   state.show = true;
-  // 默认打开标尺
-  if (state.ruler) {
-    canvasEditor.rulerEnable();
-  }
+
+  // Usar nextTick y setTimeout para asegurar que el DOM esté completamente renderizado
+  nextTick(() => {
+    setTimeout(() => {
+      // Verificar que el canvas tenga dimensiones válidas antes de habilitar la regla
+      if (state.ruler && canvas.getWidth() > 0 && canvas.getHeight() > 0) {
+        canvasEditor.rulerEnable();
+      }
+    }, 100); // Pequeño retraso para asegurar que el canvas tenga dimensiones
+  });
 });
 
 onUnmounted(() => canvasEditor.destory());
-const rulerSwitch = (val) => {
+const rulerSwitch = (val: boolean) => {
   if (val) {
     canvasEditor.rulerEnable();
   } else {
     canvasEditor.rulerDisable();
   }
   // 使标尺开关组件失焦，避免响应键盘的空格事件
-  document.activeElement.blur();
+  const activeElement = document.activeElement as HTMLElement;
+  if (activeElement && activeElement.blur) {
+    activeElement.blur();
+  }
 };
 
 provide('fabric', fabric);

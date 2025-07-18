@@ -8,12 +8,14 @@ import hide from '@/components/hide.vue';
 import group from '@/components/group.vue';
 import lock from '@/components/lock.vue';
 import dele from '@/components/del.vue';
+import edit from '@/components/edit.vue';
 
 import bgBar from '@/components/bgBar.vue';
 import setSize from '@/components/setSize.vue';
 import replaceImg from '@/components/replaceImg.vue';
 import filters from '@/components/filters.vue';
 import imgStroke from '@/components/imgStroke.vue';
+import clipImage from '@/components/clipImage.vue';
 // import elementData from '@/components/elementData.vue';
 // 右侧组件
 // import attribute from '@/components/attribute.vue';
@@ -24,6 +26,7 @@ import attributeBorder from '@/components/attributeBorder.vue';
 import attributeRounded from '@/components/attributeRounded.vue';
 import attributeFont from '@/components/attributeFont.vue';
 import attributeTextFloat from '@/components/attributeTextFloat.vue';
+import attributeTextContent from '@/components/attributeTextContent.vue';
 import attributeColor from '@/components/attributeColor.vue';
 import attributeBarcode from '@/components/attributeBarcode.vue';
 import attributeQrCode from '@/components/attributeQrCode.vue';
@@ -87,7 +90,7 @@ const switchAttrBar = () => {
         <!-- 裁剪 -->
         <cropperImg></cropperImg>
         <!-- 图片裁切 -->
-        <clip-image></clip-image>
+        <clipImage></clipImage>
         <!-- 翻转 -->
         <flip></flip>
         <!-- 条形码属性 -->
@@ -105,7 +108,7 @@ const switchAttrBar = () => {
         <!-- 字体小数点 -->
         <attributeTextFloat></attributeTextFloat>
         <!-- 文字内容  -->
-        <attribute-text-content></attribute-text-content>
+        <attributeTextContent></attributeTextContent>
         <!-- 位置信息 -->
         <attributePostion></attributePostion>
         <!-- 阴影 -->

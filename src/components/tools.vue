@@ -212,20 +212,6 @@ const drawPolygon = () => {
   }
 };
 
-const drawPathText = () => {
-  if (state.lineType === LINE_TYPE.pathText) {
-    state.lineType = false;
-    state.isDrawingLineMode = false;
-    canvasEditor.endTextPathDraw();
-  } else {
-    endConflictTools();
-    endDrawingLineMode();
-    state.lineType = LINE_TYPE.pathText;
-    state.isDrawingLineMode = true;
-    canvasEditor.startTextPathDraw();
-  }
-};
-
 const freeDraw = () => {
   if (state.lineType === LINE_TYPE.freeDraw) {
     canvasEditor.endDraw();

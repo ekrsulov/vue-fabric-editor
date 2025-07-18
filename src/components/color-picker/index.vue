@@ -159,7 +159,6 @@ let paletteMoveable = null;
 let sliderHuxMoveable = null;
 let sliderAlphaMoveable = null;
 let mousedownGradientPointer = null;
-let backendHex = null;
 // 是否可以改变 palette sliderHux sliderAlpha 的 pointer 位置
 let canChangeHSLAPointerPos = true;
 let canChangeHSLAPointerPosTimer = null;
@@ -420,7 +419,6 @@ function changeMode(mode) {
 function updateColorData(hexA) {
   paletteBackground.value = `hsl(${hsla.h}, 100%, 50%)`;
   hex.value = hexA.slice(0, 7);
-  backendHex = hex.value;
   alpha.value = Math.round((hsla.a ?? 1) * 100);
 }
 
@@ -485,8 +483,6 @@ function onChangeHex(value) {
     } catch (error) {
       console.log(error);
     }
-  } else {
-    // hex.value = backendHex
   }
 }
 

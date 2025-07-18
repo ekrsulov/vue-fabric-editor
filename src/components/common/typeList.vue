@@ -32,8 +32,6 @@
 </template>
 
 <script name="ImportJson" setup>
-const baseURL = import.meta.env.APP_APIHOST;
-
 const emit = defineEmits(['click', 'dragend']);
 
 const props = defineProps({

@@ -8,7 +8,9 @@
 <template>
   <div class="box attr-item-box" v-if="isOne && !isGroup">
     <!-- <h3>边框</h3> -->
-    <Divider plain orientation="left"><h4>边框</h4></Divider>
+    <Divider plain orientation="left">
+      <h4>{{ $t('border') }}</h4>
+    </Divider>
     <!-- 通用属性 -->
     <div>
       <Row :gutter="12">

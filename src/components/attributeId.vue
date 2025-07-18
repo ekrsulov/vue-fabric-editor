@@ -9,7 +9,9 @@
 <template>
   <div class="box attr-item-box" v-if="isOne">
     <!-- <h3>数据</h3> -->
-    <Divider plain orientation="left"><h4>数据</h4></Divider>
+    <Divider plain orientation="left">
+      <h4>{{ $t('data') }}</h4>
+    </Divider>
 
     <Form :label-width="40" class="form-wrap">
       <FormItem :label="$t('attributes.id')">
@@ -34,7 +36,7 @@
         </Select>
       </Col>
       <Col flex="1">
-        <Input v-model="baseAttr.linkData[1]" placeholder="请输入" />
+        <Input v-model="baseAttr.linkData[1]" :placeholder="$t('pleaseEnter')" />
       </Col>
     </Row>
 

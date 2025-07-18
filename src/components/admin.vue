@@ -93,7 +93,7 @@ const addTempl = () => {
 
 const setTokenHandel = () => {
   setToken(String(token.value));
-  Message.success('复制成功');
+  Message.success(t('copySuccess'));
 };
 </script>
 

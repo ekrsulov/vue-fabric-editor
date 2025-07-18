@@ -8,7 +8,9 @@
 
 <template>
   <div class="box attr-item-box" v-if="isOne && selectType !== 'image' && selectType !== 'group'">
-    <Divider plain orientation="left"><h4>颜色</h4></Divider>
+    <Divider plain orientation="left">
+      <h4>{{ $t('color') }}</h4>
+    </Divider>
     <!-- 通用属性 -->
     <div class="bg-item">
       <Tooltip placement="top" theme="light">
@@ -16,7 +18,7 @@
         <template #content>
           <color-picker
             v-model:value="baseAttr.fill"
-            :modes="['渐变', '纯色']"
+            :modes="[$t('gradient'), $t('solidColor')]"
             @change="colorChange"
             @nativePick="dropColor"
           ></color-picker>
@@ -33,7 +35,7 @@ import colorPicker from './color-picker';
 import { toRaw } from 'vue';
 
 const update = getCurrentInstance();
-const { fabric, selectType, canvasEditor, isOne } = useSelect();
+const { fabric, selectType, canvasEditor, isOne, t } = useSelect();
 const angleKey = 'gradientAngle';
 // 属性值
 const baseAttr = reactive({
@@ -59,9 +61,9 @@ const colorChange = (value) => {
   const activeObject = canvasEditor.canvas.getActiveObjects()[0];
   if (activeObject) {
     const color = String(value.color).replace('NaN', '');
-    if (value.mode === '纯色') {
+    if (value.mode === t('solidColor')) {
       activeObject.set('fill', color);
-    } else if (value.mode === '渐变') {
+    } else if (value.mode === t('gradient')) {
       const currentGradient = cssToFabricGradient(
         toRaw(value.stops),
         activeObject.width,

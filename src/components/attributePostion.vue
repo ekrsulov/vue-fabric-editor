@@ -8,7 +8,9 @@
 <template>
   <div class="box attr-item-box" v-if="isOne">
     <!-- <h3>位置信息</h3> -->
-    <Divider plain orientation="left"><h4>位置信息</h4></Divider>
+    <Divider plain orientation="left">
+      <h4>{{ $t('positionInfo') }}</h4>
+    </Divider>
     <!-- 通用属性 -->
     <div v-show="isMatchType">
       <Row :gutter="10">

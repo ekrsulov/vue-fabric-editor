@@ -26,7 +26,7 @@
 
     <!-- <div>
       <Divider plain orientation="left">
-        <h4>蒙版</h4>
+        <h4>{{ $t('mask') }}</h4>
       </Divider>
 
       <workspaceMask />

@@ -73,7 +73,7 @@ const switchAttrBar = () => {
         <group></group>
         <!-- <Divider plain></Divider> -->
         <Divider plain orientation="left">
-          <h4>快捷操作</h4>
+          <h4>{{ $t('quickActions') }}</h4>
         </Divider>
         <div class="bg-item" v-show="mixinState.mSelectMode">
           <lock></lock>
@@ -121,7 +121,7 @@ const switchAttrBar = () => {
         <attributeId></attributeId>
 
         <!-- 新增字体样式使用 -->
-        <Button @click="canvasEditor.getFontJson()" size="small">获取元素数据</Button>
+        <Button @click="canvasEditor.getFontJson()" size="small">{{ $t('getElementData') }}</Button>
       </div>
     </div>
     <!-- <attribute v-if="state.show"></attribute> -->

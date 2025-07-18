@@ -126,3 +126,100 @@ declare namespace fabric {
     ruler: InstanceType<typeof CanvasRuler>;
   }
 }
+
+// Declaraciones de módulos para TypeScript
+declare module 'fabric' {
+  export const fabric: typeof fabric;
+}
+
+declare module '@kuaitu/core' {
+  export default class Editor {
+    init(canvas: any): void;
+    use(plugin: any, options?: any): Editor;
+    rulerEnable(): void;
+    rulerDisable(): void;
+    destory(): void;
+    on(event: string, callback: (...args: any[]) => void): void;
+    off(event: string, callback: (...args: any[]) => void): void;
+    emit(event: string, ...args: any[]): void;
+    getSelectMode(): any;
+    [key: string]: any;
+  }
+
+  export interface IEditor extends Editor {
+    canvas: any;
+  }
+
+  export interface IPluginTempl {
+    pluginName: string;
+    render?: any;
+    init?: (editor: IEditor) => void;
+    destroy?: () => void;
+    [key: string]: any;
+  }
+
+  export interface IPluginMenu {
+    text: string;
+    onclick: () => void;
+    [key: string]: any;
+  }
+
+  export interface IPluginClass {
+    new (...args: any[]): any;
+    [key: string]: any;
+  }
+
+  export interface IPluginOption {
+    [key: string]: any;
+  }
+
+  export interface IEditorHooksType {
+    [key: string]: any;
+  }
+
+  export const DringPlugin: any;
+  export const AlignGuidLinePlugin: any;
+  export const ControlsPlugin: any;
+  export const CenterAlignPlugin: any;
+  export const LayerPlugin: any;
+  export const CopyPlugin: any;
+  export const MoveHotKeyPlugin: any;
+  export const DeleteHotKeyPlugin: any;
+  export const GroupPlugin: any;
+  export const DrawLinePlugin: any;
+  export const GroupTextEditorPlugin: any;
+  export const GroupAlignPlugin: any;
+  export const WorkspacePlugin: any;
+  export const HistoryPlugin: any;
+  export const FlipPlugin: any;
+  export const RulerPlugin: any;
+  export const MaterialPlugin: any;
+  export const WaterMarkPlugin: any;
+  export const FontPlugin: any;
+  export const PolygonModifyPlugin: any;
+  export const DrawPolygonPlugin: any;
+  export const FreeDrawPlugin: any;
+  export const PathTextPlugin: any;
+  export const PsdPlugin: any;
+  export const SimpleClipImagePlugin: any;
+  export const BarCodePlugin: any;
+  export const QrCodePlugin: any;
+  export const ImageStroke: any;
+  export const ResizePlugin: any;
+  export const LockPlugin: any;
+  export const AddBaseTypePlugin: any;
+  export const MaskPlugin: any;
+
+  export const EventType: {
+    SelectMode: {
+      EMPTY: string;
+      ONE: string;
+      MULTI: string;
+    };
+    SelectEvent: {
+      ONE: string;
+      MULTI: string;
+      CANCEL: string;
+    };
+  };
+}

@@ -59,6 +59,7 @@
   "rectangle": "Rectangle",
   "circle": "Circle",
   "group": "Group",
+  "align": "Align",
   "font_style": "Text",
   "common_elements": "Common Elements",
   "draw_elements": "Draw Elements",

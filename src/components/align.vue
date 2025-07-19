@@ -9,7 +9,9 @@
 <template>
   <div v-if="isMultiple" class="attr-item-box">
     <!-- <h3>对齐</h3> -->
-    <Divider plain orientation="left"><h4>对齐</h4></Divider>
+    <Divider plain orientation="left">
+      <h4>{{ $t('align') }}</h4>
+    </Divider>
     <div class="bg-item">
       <!-- 水平对齐 -->
       <Tooltip :content="$t('attrSeting.align.left')">
@@ -74,7 +76,7 @@ import syIcon from '@/assets/icon/sy.svg';
 import centerxIcon from '@/assets/icon/centerx.svg';
 import centeryIcon from '@/assets/icon/centery.svg';
 
-const { canvasEditor, isMultiple } = useSelect();
+const { canvasEditor, isMultiple, t } = useSelect();
 
 // 左对齐
 const left = () => {

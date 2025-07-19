@@ -18,7 +18,11 @@
         <template #content>
           <color-picker
             v-model:value="baseAttr.fill"
-            :modes="[$t('gradient'), $t('solidColor')]"
+            :modes="['渐变', '纯色']"
+            :mode-labels="{
+              纯色: $t('solidColor'),
+              渐变: $t('gradient'),
+            }"
             @change="colorChange"
             @nativePick="dropColor"
           ></color-picker>
@@ -61,9 +65,9 @@ const colorChange = (value) => {
   const activeObject = canvasEditor.canvas.getActiveObjects()[0];
   if (activeObject) {
     const color = String(value.color).replace('NaN', '');
-    if (value.mode === t('solidColor')) {
+    if (value.mode === '纯色') {
       activeObject.set('fill', color);
-    } else if (value.mode === t('gradient')) {
+    } else if (value.mode === '渐变') {
       const currentGradient = cssToFabricGradient(
         toRaw(value.stops),
         activeObject.width,

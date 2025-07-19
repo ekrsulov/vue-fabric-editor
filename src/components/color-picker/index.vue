@@ -8,9 +8,9 @@
 <template>
   <div class="color-picker">
     <Tabs v-if="modes.length > 1" :value="mode" @update:value="onChangeMode">
-      <TabPanel v-for="label in modes" :key="label" :label="label"></TabPanel>
+      <TabPanel v-for="label in modes" :key="label" :label="modeLabels[label] || label"></TabPanel>
     </Tabs>
-    <div v-else class="title">{{ mode }}</div>
+    <div v-else class="title">{{ modeLabels[mode] || mode }}</div>
 
     <template v-if="showGradient">
       <div v-show="mode === '渐变'" class="cp__gradient flex-center">
@@ -115,6 +115,14 @@ const props = defineProps({
   modes: {
     type: Array,
     default: () => ['纯色', '渐变'], // 图案
+  },
+
+  modeLabels: {
+    type: Object,
+    default: () => ({
+      纯色: '纯色',
+      渐变: '渐变',
+    }),
   },
 
   defaultColor: {

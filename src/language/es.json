@@ -170,7 +170,11 @@
         "rb": "Esquina inferior derecha",
         "full": "Mosaico"
       }
-    }
+    },
+    "selectFont": "Seleccionar fuente",
+    "horizontal": "Horizontal",
+    "tilted": "Inclinado",
+    "confirm": "Confirmar"
   },
   "material": {
     "cartoon": "Material"

@@ -104,7 +104,11 @@
         "rb": "Right Bottom",
         "full": "Full"
       }
-    }
+    },
+    "selectFont": "Select Font",
+    "horizontal": "Horizontal",
+    "tilted": "Tilted",
+    "confirm": "Confirm"
   },
   "material": {
     "cartoon": "cartoon"

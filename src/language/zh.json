@@ -171,7 +171,11 @@
         "rb": "右下角",
         "full": "平铺"
       }
-    }
+    },
+    "selectFont": "选择字体",
+    "horizontal": "横向",
+    "tilted": "倾斜",
+    "confirm": "确定"
   },
   "material": {
     "cartoon": "素材"

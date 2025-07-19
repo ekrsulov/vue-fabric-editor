@@ -101,18 +101,23 @@
     "text": "WaterMark",
     "modalTitle": "WaterMark Setting",
     "setting": {
-        "name": "Mark Name",
-        "size": "MarK Size",
-        "angle": "Mark Angle",
-        "position": {
-            "label": "Mark Position",
-            "lt": "Left Top",
-            "rt": "Right Top",
-            "lb": "Left Bottom",
-            "rb": "Right Bottom",
-            "full": "Full"
-        }
-    }
+      "name": "Mark Name",
+      "size": "MarK Size",
+      "color": "Color",
+      "angle": "Mark Angle",
+      "position": {
+        "label": "Mark Position",
+        "lt": "Left Top",
+        "rt": "Right Top",
+        "lb": "Left Bottom",
+        "rb": "Right Bottom",
+        "full": "Full"
+      }
+    },
+    "selectFont": "Selecionar Fonte",
+    "horizontal": "Horizontal",
+    "tilted": "Inclinado",
+    "confirm": "Confirmar"
   },
   "upload_background": "Carregar plano de fundo",
   "mouseMenu": {

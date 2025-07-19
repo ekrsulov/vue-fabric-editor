@@ -22,7 +22,7 @@
       />
     </div>
     <div class="setting-item font-selector">
-      <span class="mr-10px">选择字体</span>
+      <span class="mr-10px">{{ $t('waterMark.selectFont') }}</span>
       <Select class="w-320" v-model="waterMarkState.fontFamily" @on-change="changeFontFamily">
         <Option v-for="item in fontsList" :value="item.name" :key="`font-${item.name}`">
           <div class="font-item" v-if="!item.img">{{ item.name }}</div>
@@ -60,8 +60,8 @@
 
       <div>
         <RadioGroup v-model="waterMarkState.isRotate">
-          <Radio :label="0">横向</Radio>
-          <Radio :label="1">倾斜</Radio>
+          <Radio :label="0">{{ $t('waterMark.horizontal') }}</Radio>
+          <Radio :label="1">{{ $t('waterMark.tilted') }}</Radio>
         </RadioGroup>
       </div>
     </div>
@@ -69,7 +69,7 @@
       <Button type="text" @click="onCleanUpWaterMark">
         {{ `${$t('cleanUp')}${$t('waterMark.text')}` }}
       </Button>
-      <Button type="primary" @click="onModalOk">确定</Button>
+      <Button type="primary" @click="onModalOk">{{ $t('waterMark.confirm') }}</Button>
     </template>
   </Modal>
 </template>

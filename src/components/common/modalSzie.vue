@@ -12,11 +12,11 @@
       {{ $t('importFiles.createDesign.customSize') }}
     </h3>
     <Form ref="formInline" inline :label-width="40">
-      <FormItem label="宽度">
-        <InputNumber v-model="width" :min="1" placeholder="请输入"></InputNumber>
+      <FormItem :label="$t('width')">
+        <InputNumber v-model="width" :min="1" :placeholder="$t('pleaseEnter')"></InputNumber>
       </FormItem>
-      <FormItem label="高度">
-        <InputNumber v-model="height" :min="1" placeholder="请输入"></InputNumber>
+      <FormItem :label="$t('height')">
+        <InputNumber v-model="height" :min="1" :placeholder="$t('pleaseEnter')"></InputNumber>
       </FormItem>
       <FormItem :label-width="0">
         <Button type="primary" @click="customSizeCreate">

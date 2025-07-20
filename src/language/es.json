@@ -39,6 +39,7 @@
   "color": "Color",
   "textFloat": "Decimal",
   "width": "Ancho",
+  "height": "Alto",
   "grid": "Cuadrícula",
   "placeholder": "Marcador de posición",
   "templates": "Plantillas",

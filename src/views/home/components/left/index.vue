@@ -31,16 +31,22 @@ const leftBarComponent = {
 // https://github.com/intlify/vue-i18n/issues/1396#issuecomment-1716123143
 const leftBar = reactive([
   {
-    //模板
-    key: 'importTmpl',
-    name: computed(() => t('templates')),
-    icon: 'md-book',
-  },
-  {
     //基础元素
     key: 'tools',
     name: computed(() => t('elements')),
     icon: 'md-images',
+  },
+  {
+    // 图层
+    key: 'layer',
+    name: computed(() => t('layers')),
+    icon: 'md-reorder',
+  },
+  {
+    //模板
+    key: 'importTmpl',
+    name: computed(() => t('templates')),
+    icon: 'md-book',
   },
   {
     //字体样式
@@ -53,12 +59,6 @@ const leftBar = reactive([
     key: 'material',
     name: computed(() => t('material.cartoon')),
     icon: 'ios-leaf-outline',
-  },
-  {
-    // 图层
-    key: 'layer',
-    name: computed(() => t('layers')),
-    icon: 'md-reorder',
   },
   {
     // 用户素材

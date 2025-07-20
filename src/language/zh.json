@@ -281,6 +281,16 @@
     "borderRadiusY": "圆角垂直半径",
     "rx_ry": "半径"
   },
+  "pathData": {
+    "title": "路径数据",
+    "commandType": "命令",
+    "coordinates": "坐标",
+    "noCoordinates": "无坐标",
+    "totalCommands": "总命令数",
+    "totalPoints": "总点数",
+    "isClosed": "路径闭合",
+    "length": "长度"
+  },
   "setSizeTip": "调整画布尺寸",
   "tip": "提示",
   "clearTip": "确定要清空吗？",

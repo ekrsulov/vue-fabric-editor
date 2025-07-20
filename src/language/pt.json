@@ -182,5 +182,15 @@
     "offset_y": "Y",
     "rx_ry": "Rounded",
     "picture_filter": "Filtro"
+  },
+  "pathData": {
+    "title": "Dados do Caminho",
+    "commandType": "Comando",
+    "coordinates": "Coordenadas",
+    "noCoordinates": "Sem coordenadas",
+    "totalCommands": "Total de comandos",
+    "totalPoints": "Total de pontos",
+    "isClosed": "Caminho fechado",
+    "length": "Comprimento"
   }
 }

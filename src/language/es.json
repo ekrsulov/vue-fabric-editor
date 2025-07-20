@@ -281,6 +281,16 @@
     "borderRadiusY": "Radio vertical del borde",
     "rx_ry": "Radio"
   },
+  "pathData": {
+    "title": "Datos de Ruta",
+    "commandType": "Comando",
+    "coordinates": "Coordenadas",
+    "noCoordinates": "Sin coordenadas",
+    "totalCommands": "Comandos totales",
+    "totalPoints": "Puntos totales",
+    "isClosed": "Ruta cerrada",
+    "length": "Longitud"
+  },
   "setSizeTip": "Ajustar tamaño del lienzo",
   "tip": "Consejo",
   "clearTip": "¿Estás seguro de que quieres limpiar?",

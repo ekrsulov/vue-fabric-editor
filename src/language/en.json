@@ -241,6 +241,16 @@
     "borderRadiusY": "radiusY",
     "rx_ry": "Rounded"
   },
+  "pathData": {
+    "title": "Path Data",
+    "commandType": "Command",
+    "coordinates": "Coordinates",
+    "noCoordinates": "No coordinates",
+    "totalCommands": "Total commands",
+    "totalPoints": "Total points",
+    "isClosed": "Path closed",
+    "length": "Length"
+  },
   "setSizeTip": "Resize canvas",
   "tip": "tip",
   "clearTip": "Are you sure you want to clear it?",

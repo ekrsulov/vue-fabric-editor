@@ -10,6 +10,13 @@ import qs from 'qs';
 import axios from 'axios';
 
 import ApiClass from './apiClass';
+import { 
+  getFontStyleTypesFallback, 
+  getFontStylesFallbackByIndex 
+} from './fallback';
+
+// Counter for sequential font styles API calls to track which fallback to use
+let fontStylesCallCount = 0;
 
 const baseURL = import.meta.env.APP_APIHOST;
 
@@ -29,14 +36,30 @@ export const getMaterialsByType = (data: any) =>
   instance.get('/api/materials?' + qs.stringify(data));
 
 // 获取字体分类分类
-export const getFontStyleTypes = () => instance.get('/api/font-style-types');
+export const getFontStyleTypes = () => 
+  instance.get('/api/font-style-types').catch(async (error) => {
+    // Failed to fetch font style types from API, using fallback data
+    const fallbackData = await getFontStyleTypesFallback();
+    return { data: fallbackData };
+  });
 
 // 获取字体素材离别奥列表
-export const getFontStyles = (data: any) => instance.get('/api/font-styles?' + data);
+export const getFontStyles = (data: any) => 
+  instance.get('/api/font-styles?' + data).catch(async (error) => {
+    // Failed to fetch font styles from API, using fallback data
+    const fallbackData = await getFontStylesFallbackByIndex(fontStylesCallCount);
+    fontStylesCallCount = (fontStylesCallCount + 1) % 3; // Cycle through 0, 1, 2
+    return { data: fallbackData };
+  });
 
 // 获取根据分类获取字体样式列表
 export const getFontStyleListByType = (data: any) =>
-  instance.get('/api/font-styles?' + qs.stringify(data));
+  instance.get('/api/font-styles?' + qs.stringify(data)).catch(async (error) => {
+    // Failed to fetch font styles by type from API, using fallback data
+    const fallbackData = await getFontStylesFallbackByIndex(fontStylesCallCount);
+    fontStylesCallCount = (fontStylesCallCount + 1) % 3; // Cycle through 0, 1, 2
+    return { data: fallbackData };
+  });
 
 // 获取字体分类分类
 export const getTmplTypes = () => instance.get('/api/templ-types');

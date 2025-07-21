@@ -18,8 +18,7 @@
         <div class="readonly-field">{{ baseAttr.type }}</div>
       </FormItem>
 
-      <FormItem>
-        <div class="field-label">{{ $t('attributes.id') }}</div>
+      <FormItem :label="$t('attributes.id')">
         <Input
           v-model="baseAttr.id"
           @on-change="changeCommon('id', baseAttr.id)"
@@ -129,12 +128,6 @@ onBeforeUnmount(() => {
   min-height: 24px;
   display: flex;
   align-items: center;
-}
-
-.field-label {
-  font-size: 12px;
-  color: #515a6e;
-  margin-bottom: 4px;
-  font-weight: 500;
+  justify-content: center;
 }
 </style>

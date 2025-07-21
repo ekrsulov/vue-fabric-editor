@@ -257,7 +257,7 @@
   "red_book_horizontal": "Libro rojo horizontal",
   "phone_wallpaper": "Fondo de pantalla del teléfono",
   "attributes": {
-    "id": "Identificador",
+    "id": "ID",
     "linkData": "Asociar",
     "font": "Fuente",
     "align": "Alinear",

@@ -460,7 +460,7 @@ const getObjectAttr = (e) => {
         pathCommands.value = parsePathData(pathMatch[1]);
       }
     } catch (e) {
-      console.warn('Could not extract path data from SVG source:', e);
+      // Could not extract path data from SVG source
       pathCommands.value = [];
     }
   } else {

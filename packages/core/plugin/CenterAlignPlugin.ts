@@ -8,6 +8,7 @@
 
 import { fabric } from 'fabric';
 import type { IEditor, IPluginTempl } from '@kuaitu/core';
+import i18n from "@/language";
 
 type IPlugin = Pick<CenterAlignPlugin, 'centerH' | 'center' | 'position' | 'centerV'>;
 
@@ -58,7 +59,7 @@ class CenterAlignPlugin implements IPluginTempl {
     if (activeObject) {
       return [
         {
-          text: '水平垂直居中',
+          text: i18n.global.t('mouseMenu.center'),
           hotkey: '',
           disabled: false,
           onclick: () => this.position('center'),

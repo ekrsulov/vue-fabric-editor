@@ -8,6 +8,7 @@
 
 import { fabric } from 'fabric';
 import type { IEditor, IPluginTempl } from '@kuaitu/core';
+import i18n from "@/language";
 
 type IPlugin = Pick<LayerPlugin, 'up' | 'down' | 'toFront' | 'toBack'>;
 
@@ -75,26 +76,26 @@ class LayerPlugin implements IPluginTempl {
     if (activeObject) {
       return [
         {
-          text: '图层管理',
+          text: i18n.global.t('mouseMenu.layer'),
           hotkey: '❯',
           subitems: [
             {
-              text: '上一个',
+              text: i18n.global.t('mouseMenu.up'),
               hotkey: '',
               onclick: () => this.up(),
             },
             {
-              text: '下一个',
+              text: i18n.global.t('mouseMenu.down'),
               hotkey: '',
               onclick: () => this.down(),
             },
             {
-              text: '置顶',
+              text: i18n.global.t('mouseMenu.upTop'),
               hotkey: '',
               onclick: () => this.toFront(),
             },
             {
-              text: '置底',
+              text: i18n.global.t('mouseMenu.downTop'),
               hotkey: '',
               onclick: () => this.toBack(),
             },

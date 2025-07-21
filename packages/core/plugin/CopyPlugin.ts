@@ -10,6 +10,7 @@ import { fabric } from 'fabric';
 import { v4 as uuid } from 'uuid';
 import { getImgStr } from '../utils/utils';
 import type { IEditor, IPluginTempl } from '@kuaitu/core';
+import i18n from "@/language";
 
 type IPlugin = Pick<CopyPlugin, 'clone'>;
 
@@ -113,7 +114,7 @@ class CopyPlugin implements IPluginTempl {
   contextMenu() {
     const activeObject = this.canvas.getActiveObject();
     if (activeObject) {
-      return [{ text: '复制', hotkey: 'Ctrl+V', disabled: false, onclick: () => this.clone() }];
+      return [{ text: i18n.global.t('mouseMenu.copy'), hotkey: 'Ctrl+C', disabled: false, onclick: () => this.clone() }];
     }
   }
 

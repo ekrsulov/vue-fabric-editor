@@ -10,6 +10,7 @@ import { fabric } from 'fabric';
 import { isGroup, isActiveSelection } from '../utils/utils';
 import { v4 as uuid } from 'uuid';
 import type { IEditor, IPluginTempl } from '@kuaitu/core';
+import i18n from "@/language";
 
 type IPlugin = Pick<GroupPlugin, 'unGroup' | 'group'>;
 
@@ -57,12 +58,12 @@ class GroupPlugin implements IPluginTempl {
     const activeObject = this.canvas.getActiveObject();
 
     if (isActiveSelection(activeObject)) {
-      return [{ text: '组合', hotkey: 'Ctrl+V', disabled: false, onclick: () => this.group() }];
+      return [{ text: i18n.global.t('mouseMenu.group'), hotkey: 'Ctrl+G', disabled: false, onclick: () => this.group() }];
     }
 
     if (isGroup(activeObject)) {
       return [
-        { text: '拆分组合', hotkey: 'Ctrl+V', disabled: false, onclick: () => this.unGroup() },
+        { text: i18n.global.t('mouseMenu.unGroup'), hotkey: 'Ctrl+Shift+G', disabled: false, onclick: () => this.unGroup() },
       ];
     }
   }

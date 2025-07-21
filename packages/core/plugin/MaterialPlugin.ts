@@ -170,7 +170,7 @@ class MaterialPlugin implements IPluginTempl {
           {
             "id": 1,
             "attributes": {
-              "name": "正方形",
+              "name": "Cuadrado",
               "width": "1000",
               "height": "1000",
               "unit": "px",
@@ -182,7 +182,7 @@ class MaterialPlugin implements IPluginTempl {
           {
             "id": 2,
             "attributes": {
-              "name": "小红书配图",
+              "name": "Imagen para Xiaohongshu",
               "width": "1242",
               "height": "1660",
               "unit": "px",
@@ -194,7 +194,7 @@ class MaterialPlugin implements IPluginTempl {
           {
             "id": 3,
             "attributes": {
-              "name": "公众号首图",
+              "name": "Imagen principal para cuenta oficial",
               "width": "900",
               "height": "383",
               "unit": "px",
@@ -206,7 +206,7 @@ class MaterialPlugin implements IPluginTempl {
           {
             "id": 4,
             "attributes": {
-              "name": "公众号次图",
+              "name": "Imagen secundaria para cuenta oficial",
               "width": "500",
               "height": "500",
               "unit": "px",
@@ -218,7 +218,7 @@ class MaterialPlugin implements IPluginTempl {
           {
             "id": 5,
             "attributes": {
-              "name": "竖版直播背景",
+              "name": "Fondo vertical para transmisión en vivo",
               "width": "1242",
               "height": "1660",
               "unit": "px",
@@ -230,7 +230,7 @@ class MaterialPlugin implements IPluginTempl {
           {
             "id": 6,
             "attributes": {
-              "name": "竖版视频封面",
+              "name": "Portada de video vertical",
               "width": "1242",
               "height": "2208",
               "unit": "px",
@@ -242,7 +242,7 @@ class MaterialPlugin implements IPluginTempl {
           {
             "id": 7,
             "attributes": {
-              "name": "横版视频封面",
+              "name": "Portada de video horizontal",
               "width": "1920",
               "height": "1080",
               "unit": "px",
@@ -254,7 +254,7 @@ class MaterialPlugin implements IPluginTempl {
           {
             "id": 8,
             "attributes": {
-              "name": "商品主图",
+              "name": "Imagen principal de producto",
               "width": "800",
               "height": "800",
               "unit": "px",
@@ -266,7 +266,7 @@ class MaterialPlugin implements IPluginTempl {
           {
             "id": 9,
             "attributes": {
-              "name": "电商详情页面",
+              "name": "Página de detalles de ecommerce",
               "width": "750",
               "height": "1000",
               "unit": "px",
@@ -290,7 +290,7 @@ class MaterialPlugin implements IPluginTempl {
           {
             "id": 11,
             "attributes": {
-              "name": "A4横版",
+              "name": "A4 horizontal",
               "width": "842",
               "height": "595",
               "unit": "px",
@@ -309,7 +309,7 @@ class MaterialPlugin implements IPluginTempl {
           }
         }
       };
-      
+
       // Transform fallback data to expected format
       const list = fallbackData.data.map((item: any) => {
         return {

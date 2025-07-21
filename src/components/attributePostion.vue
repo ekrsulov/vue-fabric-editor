@@ -29,6 +29,28 @@
           ></InputNumber>
         </Col>
       </Row>
+      <Row :gutter="10">
+        <Col flex="1">
+          <InputNumber
+            v-model="baseAttr.scaleX"
+            @on-change="(value) => changeCommon('scaleX', value)"
+            :append="$t('attributes.scaleX')"
+            :step="0.1"
+            :min="0.1"
+            :max="10"
+          ></InputNumber>
+        </Col>
+        <Col flex="1">
+          <InputNumber
+            v-model="baseAttr.scaleY"
+            @on-change="(value) => changeCommon('scaleY', value)"
+            :append="$t('attributes.scaleY')"
+            :step="0.1"
+            :min="0.1"
+            :max="10"
+          ></InputNumber>
+        </Col>
+      </Row>
       <Form :label-width="40" class="form-wrap">
         <FormItem :label="$t('attributes.angle')">
           <Slider
@@ -69,6 +91,8 @@ const baseType = [
   'line',
   'arrow',
   'thinTailArrow',
+  'path',
+  'Path',
 ];
 const { isMatchType, canvasEditor, isOne } = useSelect(baseType);
 
@@ -80,6 +104,8 @@ const baseAttr = reactive({
   top: 0,
   rx: 0,
   ry: 0,
+  scaleX: 1,
+  scaleY: 1,
 });
 
 // 属性获取
@@ -92,6 +118,8 @@ const getObjectAttr = (e) => {
     baseAttr.left = activeObject.get('left');
     baseAttr.top = activeObject.get('top');
     baseAttr.angle = activeObject.get('angle') || 0;
+    baseAttr.scaleX = activeObject.get('scaleX') || 1;
+    baseAttr.scaleY = activeObject.get('scaleY') || 1;
   }
 };
 
@@ -108,6 +136,12 @@ const changeCommon = (key, value) => {
     // 旋转角度适配
     if (key === 'angle') {
       activeObject.rotate(value);
+      canvasEditor.canvas.renderAll();
+      return;
+    }
+    // 缩放处理
+    if (key === 'scaleX' || key === 'scaleY') {
+      activeObject && activeObject.set(key, value);
       canvasEditor.canvas.renderAll();
       return;
     }

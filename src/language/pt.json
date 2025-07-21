@@ -175,6 +175,8 @@
     "angle": "Ângulo",
     "left": "Esq",
     "top": "Topo",
+    "scaleX": "Escala X",
+    "scaleY": "Escala Y",
     "opacity": "Transparência",
     "shadow": "Sombra",
     "blur": "Blur",

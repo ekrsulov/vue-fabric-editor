@@ -272,6 +272,8 @@
     "angle": "Rotar",
     "left": "Eje X",
     "top": "Eje Y",
+    "scaleX": "Escala X",
+    "scaleY": "Escala Y",
     "opacity": "Transparencia",
     "shadow": "Sombra",
     "blur": "Desenfocar",

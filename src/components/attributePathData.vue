@@ -144,7 +144,206 @@ const parseFabricPath = (pathArray) => {
   return commands;
 };
 
-const calculatePathStats = (commands, activeObject) => {
+const calculateActualPathLength = (commands) => {
+  if (!commands || commands.length === 0) return 0;
+
+  let totalLength = 0;
+  let currentX = 0;
+  let currentY = 0;
+  let pathStartX = 0;
+  let pathStartY = 0;
+
+  const distance = (x1, y1, x2, y2) => Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+
+  const approximateCubicBezierLength = (x1, y1, cx1, cy1, cx2, cy2, x2, y2, segments = 20) => {
+    let length = 0;
+    let prevX = x1;
+    let prevY = y1;
+
+    for (let i = 1; i <= segments; i++) {
+      const t = i / segments;
+      const t2 = t * t;
+      const t3 = t2 * t;
+      const mt = 1 - t;
+      const mt2 = mt * mt;
+      const mt3 = mt2 * mt;
+
+      const x = mt3 * x1 + 3 * mt2 * t * cx1 + 3 * mt * t2 * cx2 + t3 * x2;
+      const y = mt3 * y1 + 3 * mt2 * t * cy1 + 3 * mt * t2 * cy2 + t3 * y2;
+
+      length += distance(prevX, prevY, x, y);
+      prevX = x;
+      prevY = y;
+    }
+
+    return length;
+  };
+
+  const approximateQuadraticBezierLength = (x1, y1, cx, cy, x2, y2, segments = 15) => {
+    let length = 0;
+    let prevX = x1;
+    let prevY = y1;
+
+    for (let i = 1; i <= segments; i++) {
+      const t = i / segments;
+      const t2 = t * t;
+      const mt = 1 - t;
+      const mt2 = mt * mt;
+
+      const x = mt2 * x1 + 2 * mt * t * cx + t2 * x2;
+      const y = mt2 * y1 + 2 * mt * t * cy + t2 * y2;
+
+      length += distance(prevX, prevY, x, y);
+      prevX = x;
+      prevY = y;
+    }
+
+    return length;
+  };
+
+  commands.forEach((command) => {
+    const { type, coords } = command;
+    const isRelative = type === type.toLowerCase();
+
+    switch (type.toLowerCase()) {
+      case 'm': // Move to
+        if (coords.length >= 2) {
+          if (isRelative) {
+            currentX += coords[0];
+            currentY += coords[1];
+          } else {
+            currentX = coords[0];
+            currentY = coords[1];
+          }
+          pathStartX = currentX;
+          pathStartY = currentY;
+        }
+        break;
+
+      case 'l': // Line to
+        if (coords.length >= 2) {
+          const targetX = isRelative ? currentX + coords[0] : coords[0];
+          const targetY = isRelative ? currentY + coords[1] : coords[1];
+          totalLength += distance(currentX, currentY, targetX, targetY);
+          currentX = targetX;
+          currentY = targetY;
+        }
+        break;
+
+      case 'h': // Horizontal line
+        if (coords.length >= 1) {
+          const targetX = isRelative ? currentX + coords[0] : coords[0];
+          totalLength += Math.abs(targetX - currentX);
+          currentX = targetX;
+        }
+        break;
+
+      case 'v': // Vertical line
+        if (coords.length >= 1) {
+          const targetY = isRelative ? currentY + coords[0] : coords[0];
+          totalLength += Math.abs(targetY - currentY);
+          currentY = targetY;
+        }
+        break;
+
+      case 'c': // Cubic Bezier curve
+        if (coords.length >= 6) {
+          const cx1 = isRelative ? currentX + coords[0] : coords[0];
+          const cy1 = isRelative ? currentY + coords[1] : coords[1];
+          const cx2 = isRelative ? currentX + coords[2] : coords[2];
+          const cy2 = isRelative ? currentY + coords[3] : coords[3];
+          const x2 = isRelative ? currentX + coords[4] : coords[4];
+          const y2 = isRelative ? currentY + coords[5] : coords[5];
+
+          totalLength += approximateCubicBezierLength(
+            currentX,
+            currentY,
+            cx1,
+            cy1,
+            cx2,
+            cy2,
+            x2,
+            y2
+          );
+          currentX = x2;
+          currentY = y2;
+        }
+        break;
+
+      case 's': // Smooth cubic Bezier curve
+        if (coords.length >= 4) {
+          const cx2 = isRelative ? currentX + coords[0] : coords[0];
+          const cy2 = isRelative ? currentY + coords[1] : coords[1];
+          const x2 = isRelative ? currentX + coords[2] : coords[2];
+          const y2 = isRelative ? currentY + coords[3] : coords[3];
+
+          // For S command, we need to reflect the previous control point
+          // For simplicity, we'll approximate it as a cubic curve
+          totalLength += approximateCubicBezierLength(
+            currentX,
+            currentY,
+            currentX,
+            currentY,
+            cx2,
+            cy2,
+            x2,
+            y2
+          );
+          currentX = x2;
+          currentY = y2;
+        }
+        break;
+
+      case 'q': // Quadratic Bezier curve
+        if (coords.length >= 4) {
+          const cx = isRelative ? currentX + coords[0] : coords[0];
+          const cy = isRelative ? currentY + coords[1] : coords[1];
+          const x2 = isRelative ? currentX + coords[2] : coords[2];
+          const y2 = isRelative ? currentY + coords[3] : coords[3];
+
+          totalLength += approximateQuadraticBezierLength(currentX, currentY, cx, cy, x2, y2);
+          currentX = x2;
+          currentY = y2;
+        }
+        break;
+
+      case 't': // Smooth quadratic Bezier curve
+        if (coords.length >= 2) {
+          const x2 = isRelative ? currentX + coords[0] : coords[0];
+          const y2 = isRelative ? currentY + coords[1] : coords[1];
+
+          // For T command, we approximate as a straight line for simplicity
+          totalLength += distance(currentX, currentY, x2, y2);
+          currentX = x2;
+          currentY = y2;
+        }
+        break;
+
+      case 'a': // Elliptical arc
+        if (coords.length >= 7) {
+          const x2 = isRelative ? currentX + coords[5] : coords[5];
+          const y2 = isRelative ? currentY + coords[6] : coords[6];
+
+          // For arc approximation, we'll use the chord length as a simple estimate
+          // This is not perfectly accurate but provides a reasonable approximation
+          totalLength += distance(currentX, currentY, x2, y2);
+          currentX = x2;
+          currentY = y2;
+        }
+        break;
+
+      case 'z': // Close path
+        totalLength += distance(currentX, currentY, pathStartX, pathStartY);
+        currentX = pathStartX;
+        currentY = pathStartY;
+        break;
+    }
+  });
+
+  return totalLength;
+};
+
+const calculatePathStats = (commands) => {
   const stats = {
     totalCommands: commands.length,
     totalPoints: 0,
@@ -159,14 +358,8 @@ const calculatePathStats = (commands, activeObject) => {
   const lastCommand = commands[commands.length - 1];
   stats.isClosed = lastCommand && (lastCommand.type === 'Z' || lastCommand.type === 'z');
 
-  if (activeObject && typeof activeObject.getTotalLength === 'function') {
-    try {
-      stats.pathLength = activeObject.getTotalLength();
-    } catch (e) {
-      const bounds = activeObject.getBoundingRect();
-      stats.pathLength = (bounds.width + bounds.height) * 2;
-    }
-  }
+  // Calculate actual path length by iterating through commands
+  stats.pathLength = calculateActualPathLength(commands);
 
   return stats;
 };
@@ -275,7 +468,7 @@ const getObjectAttr = (e) => {
   }
 
   if (pathCommands.value.length > 0) {
-    pathStats.value = calculatePathStats(pathCommands.value, activeObject);
+    pathStats.value = calculatePathStats(pathCommands.value);
   } else {
     pathStats.value = null;
   }

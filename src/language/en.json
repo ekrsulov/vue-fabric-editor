@@ -232,6 +232,8 @@
     "angle": "Angle",
     "left": "Left",
     "top": "Top",
+    "scaleX": "Scale X",
+    "scaleY": "Scale Y",
     "opacity": "Opacity",
     "shadow": "Shadow",
     "blur": "Blur",

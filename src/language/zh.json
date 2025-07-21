@@ -272,6 +272,8 @@
     "angle": "旋转",
     "left": "X轴",
     "top": "Y轴",
+    "scaleX": "X缩放",
+    "scaleY": "Y缩放",
     "opacity": "透明",
     "shadow": "阴影",
     "blur": "模糊",

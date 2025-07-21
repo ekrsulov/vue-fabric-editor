@@ -14,7 +14,12 @@
     </Divider>
 
     <Form :label-width="40" class="form-wrap">
-      <FormItem :label="$t('attributes.id')">
+      <FormItem :label="$t('type')">
+        <div class="readonly-field">{{ baseAttr.type }}</div>
+      </FormItem>
+
+      <FormItem>
+        <div class="field-label">{{ $t('attributes.id') }}</div>
         <Input
           v-model="baseAttr.id"
           @on-change="changeCommon('id', baseAttr.id)"
@@ -53,6 +58,7 @@ const { canvasEditor, isOne } = useSelect();
 // 属性值
 const baseAttr = reactive({
   id: 0,
+  type: '',
   linkData: ['', ''],
 });
 
@@ -63,6 +69,7 @@ const getObjectAttr = (e) => {
   if (e && e.target && e.target !== activeObject) return;
   if (activeObject) {
     baseAttr.id = activeObject.get('id');
+    baseAttr.type = activeObject.type || activeObject.get('type') || '';
     baseAttr.linkData = activeObject.get('linkData') || ['', ''];
   }
 };
@@ -110,5 +117,24 @@ onBeforeUnmount(() => {
 
 .ivu-row {
   margin-bottom: 10px;
+}
+
+.readonly-field {
+  padding: 4px 8px;
+  background: #f8f8f9;
+  border: 1px solid #dcdee2;
+  border-radius: 4px;
+  color: #515a6e;
+  font-size: 12px;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.field-label {
+  font-size: 12px;
+  color: #515a6e;
+  margin-bottom: 4px;
+  font-weight: 500;
 }
 </style>

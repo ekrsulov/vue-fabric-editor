@@ -9,6 +9,7 @@ import { fabric } from 'fabric';
 import { SelectEvent, SelectMode } from '../eventType';
 import type { IEditor, IPluginTempl } from '@kuaitu/core';
 import lockImg from '../assets/lock.svg?url';
+import i18n from "@/language";
 // import lockImg from '../assets/rotateicon.svg?url';
 // import unlockImg from '../assets/unlock.svg?url'
 
@@ -212,9 +213,9 @@ export default class LockPlugin implements IPluginTempl {
     const activeObject = this.canvas.getActiveObject();
     if (selectedMode === SelectMode.ONE && activeObject) {
       if (activeObject.selectable) {
-        return [{ text: '锁定', hotkey: '', onclick: () => this.lock() }];
+        return [{ text: i18n.global.t('quick.lock'), hotkey: '', onclick: () => this.lock() }];
       } else {
-        return [{ text: '解锁', hotkey: '', onclick: () => this.unLock() }];
+        return [{ text: i18n.global.t('quick.unlock'), hotkey: '', onclick: () => this.unLock() }];
       }
     }
   }

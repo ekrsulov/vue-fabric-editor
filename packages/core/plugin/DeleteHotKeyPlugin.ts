@@ -8,6 +8,7 @@
 
 import { fabric } from 'fabric';
 import type { IEditor, IPluginTempl } from '@kuaitu/core';
+import i18n from "@/language";
 
 type IPlugin = Pick<DeleteHotKeyPlugin, 'del'>;
 
@@ -44,7 +45,7 @@ class DeleteHotKeyPlugin implements IPluginTempl {
     if (activeObject) {
       return [
         null,
-        { text: '删除', hotkey: 'Backspace', disabled: false, onclick: () => this.del() },
+        { text: i18n.global.t('mouseMenu.delete'), hotkey: 'Backspace', disabled: false, onclick: () => this.del() },
       ];
     }
   }

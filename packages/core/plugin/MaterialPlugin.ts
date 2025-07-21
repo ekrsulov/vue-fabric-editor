@@ -162,6 +162,165 @@ class MaterialPlugin implements IPluginTempl {
         };
       });
       return list;
+    }).catch((error) => {
+      console.warn('Failed to fetch system sizes from API, using fallback data:', error);
+      // Fallback data based on provided JSON structure
+      const fallbackData = {
+        "data": [
+          {
+            "id": 1,
+            "attributes": {
+              "name": "正方形",
+              "width": "1000",
+              "height": "1000",
+              "unit": "px",
+              "createdAt": "2025-06-16T10:01:06.690Z",
+              "updatedAt": "2025-06-16T10:01:08.920Z",
+              "publishedAt": "2025-06-16T10:01:08.918Z"
+            }
+          },
+          {
+            "id": 2,
+            "attributes": {
+              "name": "小红书配图",
+              "width": "1242",
+              "height": "1660",
+              "unit": "px",
+              "createdAt": "2025-06-16T10:30:18.297Z",
+              "updatedAt": "2025-06-16T10:30:19.809Z",
+              "publishedAt": "2025-06-16T10:30:19.807Z"
+            }
+          },
+          {
+            "id": 3,
+            "attributes": {
+              "name": "公众号首图",
+              "width": "900",
+              "height": "383",
+              "unit": "px",
+              "createdAt": "2025-06-16T10:30:36.026Z",
+              "updatedAt": "2025-06-16T10:30:38.317Z",
+              "publishedAt": "2025-06-16T10:30:38.314Z"
+            }
+          },
+          {
+            "id": 4,
+            "attributes": {
+              "name": "公众号次图",
+              "width": "500",
+              "height": "500",
+              "unit": "px",
+              "createdAt": "2025-06-16T10:30:49.251Z",
+              "updatedAt": "2025-06-16T10:32:34.719Z",
+              "publishedAt": "2025-06-16T10:32:34.717Z"
+            }
+          },
+          {
+            "id": 5,
+            "attributes": {
+              "name": "竖版直播背景",
+              "width": "1242",
+              "height": "1660",
+              "unit": "px",
+              "createdAt": "2025-06-16T10:31:03.683Z",
+              "updatedAt": "2025-06-16T10:32:35.847Z",
+              "publishedAt": "2025-06-16T10:32:35.844Z"
+            }
+          },
+          {
+            "id": 6,
+            "attributes": {
+              "name": "竖版视频封面",
+              "width": "1242",
+              "height": "2208",
+              "unit": "px",
+              "createdAt": "2025-06-16T10:31:19.077Z",
+              "updatedAt": "2025-06-16T10:32:36.947Z",
+              "publishedAt": "2025-06-16T10:32:36.944Z"
+            }
+          },
+          {
+            "id": 7,
+            "attributes": {
+              "name": "横版视频封面",
+              "width": "1920",
+              "height": "1080",
+              "unit": "px",
+              "createdAt": "2025-06-16T10:31:32.578Z",
+              "updatedAt": "2025-06-16T10:32:38.009Z",
+              "publishedAt": "2025-06-16T10:32:38.007Z"
+            }
+          },
+          {
+            "id": 8,
+            "attributes": {
+              "name": "商品主图",
+              "width": "800",
+              "height": "800",
+              "unit": "px",
+              "createdAt": "2025-06-16T10:31:45.525Z",
+              "updatedAt": "2025-06-16T10:32:39.386Z",
+              "publishedAt": "2025-06-16T10:32:39.383Z"
+            }
+          },
+          {
+            "id": 9,
+            "attributes": {
+              "name": "电商详情页面",
+              "width": "750",
+              "height": "1000",
+              "unit": "px",
+              "createdAt": "2025-06-16T10:31:59.855Z",
+              "updatedAt": "2025-06-16T10:32:40.741Z",
+              "publishedAt": "2025-06-16T10:32:40.738Z"
+            }
+          },
+          {
+            "id": 10,
+            "attributes": {
+              "name": "A4",
+              "width": "595",
+              "height": "842",
+              "unit": "px",
+              "createdAt": "2025-06-16T10:32:16.305Z",
+              "updatedAt": "2025-06-16T10:32:42.210Z",
+              "publishedAt": "2025-06-16T10:32:42.194Z"
+            }
+          },
+          {
+            "id": 11,
+            "attributes": {
+              "name": "A4横版",
+              "width": "842",
+              "height": "595",
+              "unit": "px",
+              "createdAt": "2025-06-16T10:32:32.454Z",
+              "updatedAt": "2025-06-16T10:32:43.324Z",
+              "publishedAt": "2025-06-16T10:32:43.322Z"
+            }
+          }
+        ],
+        "meta": {
+          "pagination": {
+            "page": 1,
+            "pageSize": 100,
+            "pageCount": 1,
+            "total": 11
+          }
+        }
+      };
+      
+      // Transform fallback data to expected format
+      const list = fallbackData.data.map((item: any) => {
+        return {
+          value: item.id,
+          name: item.attributes.name,
+          width: Number(item.attributes.width),
+          height: Number(item.attributes.height),
+          unit: item.attributes.unit,
+        };
+      });
+      return list;
     });
   }
   getFontList() {

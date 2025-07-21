@@ -31,7 +31,7 @@ const { locale } = useI18n();
 
 const LANGMAP = {
   zh: '中文',
-  en: 'En',
+  en: 'English',
   es: 'Español',
   pt: 'Português',
 };

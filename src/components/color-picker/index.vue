@@ -7,13 +7,17 @@
 -->
 <template>
   <div class="color-picker">
-    <Tabs v-if="modes.length > 1" :value="mode" @update:value="onChangeMode">
+    <Tabs
+      v-if="modes.length > 1"
+      :value="modeLabels[mode] || mode"
+      @update:value="onChangeModeByLabel"
+    >
       <TabPanel v-for="label in modes" :key="label" :label="modeLabels[label] || label"></TabPanel>
     </Tabs>
     <div v-else class="title">{{ modeLabels[mode] || mode }}</div>
 
     <template v-if="showGradient">
-      <div v-show="mode === '渐变'" class="cp__gradient flex-center">
+      <div v-show="mode === 'gradient'" class="cp__gradient flex-center">
         <div class="cp__gradient-bar">
           <div
             ref="elGradientTrack"
@@ -71,9 +75,9 @@
         <input v-else class="native" type="color" @input="onClickStraw" />
       </div>
       <!-- <input :value="value" @input="$emit('update:value', $event.target.value)" class="input" /> -->
-      <input v-if="mode === '渐变'" class="input" :value="activeGradient.color" />
+      <input v-if="mode === 'gradient'" class="input" :value="activeGradient.color" />
       <input v-else :value="value" class="input" @blur="onInputBlur" />
-      <template v-if="mode === '纯色'">
+      <template v-if="mode === 'solidColor'">
         <div
           v-for="pc in predefine"
           :key="pc"
@@ -114,14 +118,14 @@ const props = defineProps({
 
   modes: {
     type: Array,
-    default: () => ['纯色', '渐变'], // 图案
+    default: () => ['solidColor', 'gradient'], // 图案
   },
 
   modeLabels: {
     type: Object,
     default: () => ({
-      纯色: '纯色',
-      渐变: '渐变',
+      solidColor: 'Solid Color',
+      gradient: 'Gradient',
     }),
   },
 
@@ -180,7 +184,8 @@ const record = {
 };
 
 const showGradient = computed(() => {
-  return props.modes.includes('渐变');
+  const hasGradient = props.modes && props.modes.includes('gradient');
+  return hasGradient;
 });
 
 const sliderAlphaBackgroundStyle = computed(() => {
@@ -196,6 +201,58 @@ watch(activeGradient, (value) => {
 
 watch(hex, (value) => {
   onChangeHex(value);
+});
+
+// Gradient mouse event handlers (moved outside onMountedCallback)
+function onMousedownGradient(position) {
+  if (mousedownGradientPointer) {
+    return;
+  }
+
+  const index = gradients.value.findIndex((stop) => stop.offset >= position.x);
+  const start = gradients.value[index - 1];
+  const startRGBA = hexA2RGBA(start.color);
+  const end = gradients.value[index];
+  const endRGBA = hexA2RGBA(end.color);
+
+  const rgb = [];
+  for (let i = 0; i < 3; i += 1) {
+    rgb.push(startRGBA[i] + (endRGBA[i] - startRGBA[i]) * position.x);
+  }
+
+  const a = end.offset - position.x - (position.x - start.offset) > 0 ? startRGBA[3] : endRGBA[3];
+
+  const color = RGBA2HexA(...rgb, a);
+  activeGradient.value = {
+    color,
+    offset: position.x,
+  };
+
+  gradients.value.splice(index, 0, activeGradient.value);
+}
+
+function onMousemoveGradient(position) {
+  if (!mousedownGradientPointer) return;
+
+  activeGradient.value.offset = position.x;
+  gradients.value.sort((a, b) => a.offset - b.offset);
+
+  const value = toGradientString(angle.value, gradients.value);
+  updateValue(value);
+}
+
+function onMouseupGradient() {
+  mousedownGradientPointer = false;
+}
+
+watch(showGradient, (newValue) => {
+  if (newValue && elGradientTrack.value && !gradientMoveable) {
+    gradientMoveable = registerMoveableElement(elGradientTrack.value, {
+      onmousedown: onMousedownGradient,
+      onmousemove: onMousemoveGradient,
+      onmouseup: onMouseupGradient,
+    });
+  }
 });
 
 watch(
@@ -232,9 +289,9 @@ function onChangeHSLA(newHsla) {
   const hexA = HSLA2HexA(...Object.values(newHsla));
 
   let value;
-  if (mode.value === '纯色') {
+  if (mode.value === 'solidColor') {
     value = hexA;
-  } else if (mode.value === '渐变') {
+  } else if (mode.value === 'gradient') {
     activeGradient.value.color = hexA;
     value = toGradientString(angle.value, gradients.value);
   }
@@ -249,53 +306,12 @@ async function onMountedCallback() {
   elSliderHuxPointer.value.style.left = `${(hsla.h / 360) * 100}%`;
   elSliderAlphaPointer.value.style.left = `${hsla.a * 100}%`;
 
-  if (showGradient.value) {
+  if (showGradient.value && elGradientTrack.value) {
     gradientMoveable = registerMoveableElement(elGradientTrack.value, {
       onmousedown: onMousedownGradient,
       onmousemove: onMousemoveGradient,
       onmouseup: onMouseupGradient,
     });
-  }
-
-  function onMousedownGradient(position) {
-    if (mousedownGradientPointer) {
-      return;
-    }
-
-    const index = gradients.value.findIndex((stop) => stop.offset >= position.x);
-    const start = gradients.value[index - 1];
-    const startRGBA = hexA2RGBA(start.color);
-    const end = gradients.value[index];
-    const endRGBA = hexA2RGBA(end.color);
-
-    const rgb = [];
-    for (let i = 0; i < 3; i += 1) {
-      rgb.push(startRGBA[i] + (endRGBA[i] - startRGBA[i]) * position.x);
-    }
-
-    const a = end.offset - position.x - (position.x - start.offset) > 0 ? startRGBA[3] : endRGBA[3];
-
-    const color = RGBA2HexA(...rgb, a);
-    activeGradient.value = {
-      color,
-      offset: position.x,
-    };
-
-    gradients.value.splice(index, 0, activeGradient.value);
-  }
-
-  function onMousemoveGradient(position) {
-    if (!mousedownGradientPointer) return;
-
-    activeGradient.value.offset = position.x;
-    gradients.value.sort((a, b) => a.offset - b.offset);
-
-    const value = toGradientString(angle.value, gradients.value);
-    updateValue(value);
-  }
-
-  function onMouseupGradient() {
-    mousedownGradientPointer = false;
   }
 
   paletteMoveable = registerMoveableElement(elPalette.value, {
@@ -360,11 +376,11 @@ onBeforeUnmount(() => {
 });
 
 function recordValue(value) {
-  if (mode.value === '纯色') {
+  if (mode.value === 'solidColor') {
     record.color = value;
-  } else if (mode.value === '渐变') {
+  } else if (mode.value === 'gradient') {
     record.gradient = value;
-  } else if (mode.value === '图案') {
+  } else if (mode.value === 'pattern') {
     record.image = value;
   }
 }
@@ -388,40 +404,71 @@ async function onChangeMode(value) {
   mode.value = value;
 
   let color;
-  if (value === '纯色') {
+  if (value === 'solidColor') {
     color = record.color;
-  } else if (value === '渐变') {
-    color = record.gradient;
-  } else if (value === '图案') {
+  } else if (value === 'gradient') {
+    color = record.gradient || props.defaultGradient;
+  } else if (value === 'pattern') {
     color = record.image;
   }
+
   updateValue(color);
 }
 
+async function onChangeModeByLabel(label) {
+  // Convert label back to mode identifier
+  const modeKey = Object.keys(props.modeLabels).find((key) => props.modeLabels[key] === label);
+  if (modeKey) {
+    await onChangeMode(modeKey);
+  }
+}
+
 function changeMode(mode) {
-  if (mode === '纯色') {
+  if (mode === 'solidColor') {
     setColor(props.value);
-  } else if (mode === '渐变') {
-    if (gradients.value.length === 0) {
-      props.value.match(/[^,]+/g).forEach((item, index) => {
-        if (index === 0) {
-          angle.value = Number(item.match(/\d+/)[0]);
-          return;
-        }
+  } else if (mode === 'gradient') {
+    // Clear previous gradients when switching modes
+    gradients.value = [];
 
-        let [color, offset] = item.trim().split(' ');
-        if (!color.startsWith('#')) color = RGBA2HexA(color);
+    // If current value is a gradient, parse it
+    if (props.value && props.value.startsWith('linear-gradient')) {
+      try {
+        props.value.match(/[^,]+/g).forEach((item, index) => {
+          if (index === 0) {
+            angle.value = Number(item.match(/\d+/)[0]);
+            return;
+          }
 
-        offset = offset.match(/\d+/)[0] / 100;
-        gradients.value.push({ color, offset });
+          let [color, offset] = item.trim().split(' ');
+          if (!color.startsWith('#')) color = RGBA2HexA(color);
+
+          offset = offset.match(/\d+/)[0] / 100;
+          gradients.value.push({ color, offset });
+        });
         activeGradient.value = gradients.value[0];
-      });
+        setColor(activeGradient.value.color);
+      } catch (error) {
+        // Fallback to default gradient
+        createDefaultGradient();
+      }
     } else {
-      setColor(activeGradient.value.color);
+      // Create default gradient
+      createDefaultGradient();
     }
   }
 
   // TODO: 图案
+}
+
+function createDefaultGradient() {
+  const currentColor = props.value && props.value.startsWith('#') ? props.value : '#ffffffff';
+  angle.value = 90;
+  gradients.value = [
+    { color: currentColor, offset: 0 },
+    { color: currentColor, offset: 1 },
+  ];
+  activeGradient.value = gradients.value[0];
+  setColor(activeGradient.value.color);
 }
 
 function updateColorData(hexA) {
@@ -524,7 +571,7 @@ async function onClickStraw(val) {
       console.log('用户取消了取色');
     }
   }
-  if (mode.value === '渐变') {
+  if (mode.value === 'gradient') {
     activeGradient.value.color = result;
     activeGradient.value = { ...activeGradient.value };
   } else {

@@ -42,6 +42,7 @@ type IPlugin = Pick<
   | 'clearHighlights'
   | 'getSubPaths'
   | 'toggleSubPathPanel'
+  | 'moveSubPath'
 >;
 
 declare module '@kuaitu/core' {
@@ -58,8 +59,9 @@ export default class SubPathManagerPlugin implements IPluginTempl {
     'clearHighlights',
     'getSubPaths',
     'toggleSubPathPanel',
+    'moveSubPath',
   ];
-  static events = ['subPathExtracted', 'subPathSelected', 'subPathHighlighted', 'subPathCleared'];
+  static events = ['subPathExtracted', 'subPathSelected', 'subPathHighlighted', 'subPathCleared', 'subPathMoved'];
 
   private state: SubPathState = {
     subPaths: [],
@@ -580,6 +582,169 @@ export default class SubPathManagerPlugin implements IPluginTempl {
       hasSubPaths: this.state.subPaths.length > 0,
       subPaths: this.state.subPaths,
     });
+  }
+
+  moveSubPath(subPathId: string, offsetX: number, offsetY: number): void {
+    const subPath = this.state.subPaths.find((sp) => sp.id === subPathId);
+    if (!subPath || !this.state.originalObject) return;
+
+    try {
+      // Move the sub-path data
+      const movedPathData = this.translatePathData(subPath.pathData, offsetX, offsetY);
+      subPath.pathData = movedPathData;
+
+      // Recalculate stats and bounds
+      subPath.stats = this.calculateSubPathStats(movedPathData);
+      subPath.bounds = this.calculateSubPathBounds(movedPathData, this.state.originalObject);
+
+      // Update the original object's path data
+      this.updateOriginalObjectPath();
+
+      // If this sub-path is currently highlighted, update the highlight
+      if (this.state.selectedSubPath === subPathId) {
+        this.highlightSubPath(subPathId, 1); // Use default stroke width
+      }
+
+      // Emit event for UI updates
+      this.editor.emit('subPathMoved', { subPath, offsetX, offsetY });
+    } catch (error) {
+      console.warn('Error moving sub-path:', error);
+    }
+  }
+
+  private translatePathData(pathData: string, offsetX: number, offsetY: number): string {
+    const commandRegex = /([MmLlHhVvCcSsQqTtAaZz])((?:\s*[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?\s*,?\s*)*)/g;
+    
+    return pathData.replace(commandRegex, (match, command, coordString) => {
+      if (!coordString.trim()) return match;
+
+      const coords = coordString
+        .trim()
+        .split(/[\s,]+/)
+        .filter((s) => s !== '')
+        .map(Number);
+
+      const isRelative = command === command.toLowerCase();
+      const cmdLower = command.toLowerCase();
+
+      // Only translate absolute coordinates for positioning commands
+      if (!isRelative) {
+        switch (cmdLower) {
+          case 'm':
+          case 'l':
+            // Move and Line commands: translate x,y pairs
+            for (let i = 0; i < coords.length; i += 2) {
+              if (i + 1 < coords.length) {
+                coords[i] += offsetX;     // x coordinate
+                coords[i + 1] += offsetY; // y coordinate
+              }
+            }
+            break;
+          
+          case 'h':
+            // Horizontal line: translate x coordinates
+            for (let i = 0; i < coords.length; i++) {
+              coords[i] += offsetX;
+            }
+            break;
+          
+          case 'v':
+            // Vertical line: translate y coordinates
+            for (let i = 0; i < coords.length; i++) {
+              coords[i] += offsetY;
+            }
+            break;
+          
+          case 'c':
+            // Cubic Bezier: translate all x,y pairs
+            for (let i = 0; i < coords.length; i += 6) {
+              if (i + 5 < coords.length) {
+                coords[i] += offsetX;     // x1
+                coords[i + 1] += offsetY; // y1
+                coords[i + 2] += offsetX; // x2
+                coords[i + 3] += offsetY; // y2
+                coords[i + 4] += offsetX; // x
+                coords[i + 5] += offsetY; // y
+              }
+            }
+            break;
+          
+          case 's':
+            // Smooth Cubic Bezier: translate x2,y2,x,y pairs
+            for (let i = 0; i < coords.length; i += 4) {
+              if (i + 3 < coords.length) {
+                coords[i] += offsetX;     // x2
+                coords[i + 1] += offsetY; // y2
+                coords[i + 2] += offsetX; // x
+                coords[i + 3] += offsetY; // y
+              }
+            }
+            break;
+        }
+      }
+      // For relative commands, we don't need to translate as they're relative to the current position
+
+      return command + coords.join(' ');
+    });
+  }
+
+  private updateOriginalObjectPath(): void {
+    if (!this.state.originalObject || this.state.subPaths.length === 0) return;
+
+    try {
+      // Reconstruct the complete path data from all sub-paths
+      const completePath = this.state.subPaths.map(sp => sp.pathData).join(' ');
+      
+      // Store original position and transformations
+      const originalLeft = this.state.originalObject.left;
+      const originalTop = this.state.originalObject.top;
+      const originalScaleX = this.state.originalObject.scaleX;
+      const originalScaleY = this.state.originalObject.scaleY;
+      const originalAngle = this.state.originalObject.angle;
+      
+      // Method 1: Try using the official Fabric.js method to update path
+      if (typeof this.state.originalObject._setPath === 'function') {
+        this.state.originalObject._setPath(completePath);
+      }
+      
+      // Method 2: Update the path array directly
+      const fabricPath = this.parsePathDataToFabricPath(completePath);
+      this.state.originalObject.path = fabricPath;
+      
+      // Method 3: Update internal properties
+      (this.state.originalObject as any).pathData = completePath;
+      (this.state.originalObject as any)._path = fabricPath;
+      
+      // Force recalculation of path dimensions
+      if (typeof this.state.originalObject._setPathDimensions === 'function') {
+        (this.state.originalObject as any)._setPathDimensions();
+      }
+      
+      // Restore original transformations
+      this.state.originalObject.set({
+        left: originalLeft,
+        top: originalTop,
+        scaleX: originalScaleX,
+        scaleY: originalScaleY,
+        angle: originalAngle
+      });
+      
+      // Update coordinates and mark as dirty
+      this.state.originalObject.setCoords();
+      this.state.originalObject.dirty = true;
+      
+      // Fire the modified event to notify the editor
+      this.canvas.fire('path:changed', { target: this.state.originalObject });
+      
+      // Re-render the canvas
+      this.canvas.requestRenderAll();
+      
+      console.log('Updated original path with:', completePath);
+    } catch (error) {
+      console.error('Error updating original object path:', error);
+      // Fallback: try to force a complete re-render
+      this.canvas.renderAll();
+    }
   }
 
   private clearState(): void {

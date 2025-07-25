@@ -69,6 +69,44 @@
               </span>
             </div>
           </div>
+          <div class="sub-path-joystick">
+            <div class="joystick-container">
+              <button
+                class="joystick-btn joystick-up"
+                @click.stop.prevent="moveSubPath(subPath.id, 0, -1)"
+                @mousedown.stop.prevent
+                title="Mover arriba"
+              >
+                <Icon type="ios-arrow-up" />
+              </button>
+              <div class="joystick-middle">
+                <button
+                  class="joystick-btn joystick-left"
+                  @click.stop.prevent="moveSubPath(subPath.id, -1, 0)"
+                  @mousedown.stop.prevent
+                  title="Mover izquierda"
+                >
+                  <Icon type="ios-arrow-back" />
+                </button>
+                <button
+                  class="joystick-btn joystick-right"
+                  @click.stop.prevent="moveSubPath(subPath.id, 1, 0)"
+                  @mousedown.stop.prevent
+                  title="Mover derecha"
+                >
+                  <Icon type="ios-arrow-forward" />
+                </button>
+              </div>
+              <button
+                class="joystick-btn joystick-down"
+                @click.stop.prevent="moveSubPath(subPath.id, 0, 1)"
+                @mousedown.stop.prevent
+                title="Mover abajo"
+              >
+                <Icon type="ios-arrow-down" />
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="sub-path-details" v-if="selectedSubPath === subPath.id">
@@ -190,6 +228,11 @@ const updateStrokeWidth = (newWidth: number) => {
   if (state.selectedSubPath) {
     canvasEditor.selectSubPath(state.selectedSubPath, newWidth);
   }
+};
+
+// Move sub-path by specified offset
+const moveSubPath = (subPathId: string, offsetX: number, offsetY: number) => {
+  canvasEditor.moveSubPath(subPathId, offsetX, offsetY);
 };
 
 const getSubPathColor = (color: string) => {
@@ -458,11 +501,20 @@ const handleSelectionCleared = () => {
   state.isVisible = false;
 };
 
+const handleSubPathMoved = (data: { subPath: SubPath; offsetX: number; offsetY: number }) => {
+  // Update the sub-path in our local state
+  const index = state.subPaths.findIndex((sp) => sp.id === data.subPath.id);
+  if (index !== -1) {
+    state.subPaths[index] = { ...data.subPath };
+  }
+};
+
 onMounted(() => {
   canvasEditor.on('subPathExtracted', handleSubPathExtracted);
   canvasEditor.on('subPathSelected', handleSubPathSelected);
   canvasEditor.on('subPathHighlighted', handleSubPathHighlighted);
   canvasEditor.on('subPathCleared', handleSubPathCleared);
+  canvasEditor.on('subPathMoved', handleSubPathMoved);
   canvasEditor.on('selectCancel', handleSelectionCleared);
 });
 
@@ -471,6 +523,7 @@ onBeforeUnmount(() => {
   canvasEditor.off('subPathSelected', handleSubPathSelected);
   canvasEditor.off('subPathHighlighted', handleSubPathHighlighted);
   canvasEditor.off('subPathCleared', handleSubPathCleared);
+  canvasEditor.off('subPathMoved', handleSubPathMoved);
   canvasEditor.off('selectCancel', handleSelectionCleared);
 });
 </script>
@@ -590,6 +643,62 @@ onBeforeUnmount(() => {
         background: #f5f5f5;
         padding: 2px 6px;
         border-radius: 10px;
+      }
+    }
+  }
+
+  .sub-path-joystick {
+    margin-left: 8px;
+    flex-shrink: 0;
+
+    .joystick-container {
+      display: grid;
+      grid-template-rows: 1fr 1fr 1fr;
+      grid-template-columns: 1fr;
+      gap: 1px;
+      width: 24px;
+      height: 60px;
+
+      .joystick-btn {
+        width: 24px;
+        height: 18px;
+        border: 1px solid #d9d9d9;
+        background: #fff;
+        border-radius: 3px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: #666;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: #f0f0f0;
+          border-color: #bfbfbf;
+          color: #333;
+        }
+
+        &:active {
+          background: #e6f7ff;
+          border-color: #1890ff;
+          color: #1890ff;
+        }
+      }
+
+      .joystick-middle {
+        display: flex;
+        gap: 1px;
+
+        .joystick-btn {
+          width: 11px;
+          height: 18px;
+        }
+      }
+
+      .joystick-up,
+      .joystick-down {
+        justify-self: center;
       }
     }
   }

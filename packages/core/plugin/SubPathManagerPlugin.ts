@@ -365,7 +365,7 @@ export default class SubPathManagerPlugin implements IPluginTempl {
     };
   }
 
-  highlightSubPath(subPathId: string): void {
+  highlightSubPath(subPathId: string, strokeWidth: number = 1): void {
     const subPath = this.state.subPaths.find((sp) => sp.id === subPathId);
     if (!subPath || !this.state.originalObject) return;
 
@@ -386,7 +386,7 @@ export default class SubPathManagerPlugin implements IPluginTempl {
         // Style the highlight
         clonedPath.set({
           stroke: subPath.color,
-          strokeWidth: 3,
+          strokeWidth: strokeWidth,
           fill: 'transparent',
           opacity: 0.8,
           selectable: false,
@@ -547,11 +547,11 @@ export default class SubPathManagerPlugin implements IPluginTempl {
     return fabricPath;
   }
 
-  selectSubPath(subPathId: string): void {
+  selectSubPath(subPathId: string, strokeWidth: number = 1): void {
     const subPath = this.state.subPaths.find((sp) => sp.id === subPathId);
     if (!subPath) return;
 
-    this.highlightSubPath(subPathId);
+    this.highlightSubPath(subPathId, strokeWidth);
     this.editor.emit('subPathSelected', { subPath });
   }
 

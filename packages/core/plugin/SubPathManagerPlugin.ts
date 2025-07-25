@@ -43,6 +43,7 @@ type IPlugin = Pick<
   | 'getSubPaths'
   | 'toggleSubPathPanel'
   | 'moveSubPath'
+  | 'deleteSubPath'
 >;
 
 declare module '@kuaitu/core' {
@@ -60,8 +61,9 @@ export default class SubPathManagerPlugin implements IPluginTempl {
     'getSubPaths',
     'toggleSubPathPanel',
     'moveSubPath',
+    'deleteSubPath',
   ];
-  static events = ['subPathExtracted', 'subPathSelected', 'subPathHighlighted', 'subPathCleared', 'subPathMoved'];
+  static events = ['subPathExtracted', 'subPathSelected', 'subPathHighlighted', 'subPathCleared', 'subPathMoved', 'subPathDeleted'];
 
   private state: SubPathState = {
     subPaths: [],
@@ -745,6 +747,60 @@ export default class SubPathManagerPlugin implements IPluginTempl {
       // Fallback: try to force a complete re-render
       this.canvas.renderAll();
     }
+  }
+
+  deleteSubPath(subPathId: string): void {
+    const subPathIndex = this.state.subPaths.findIndex((sp) => sp.id === subPathId);
+    if (subPathIndex === -1) return;
+
+    try {
+      const deletedSubPath = this.state.subPaths[subPathIndex];
+
+      // Clear highlight if the deleted sub-path was selected
+      if (this.state.selectedSubPath === subPathId) {
+        this.clearHighlights();
+      }
+
+      // Remove the sub-path from the array
+      this.state.subPaths.splice(subPathIndex, 1);
+
+      // If no sub-paths remain, clear everything
+      if (this.state.subPaths.length === 0) {
+        this.clearState();
+        this.editor.emit('subPathDeleted', { 
+          deletedSubPath, 
+          remainingSubPaths: [], 
+          isEmpty: true 
+        });
+        return;
+      }
+
+      // Update indices of remaining sub-paths
+      this.updateSubPathIndices();
+
+      // Update the original object's path data
+      this.updateOriginalObjectPath();
+
+      // Emit event for UI updates
+      this.editor.emit('subPathDeleted', { 
+        deletedSubPath, 
+        remainingSubPaths: this.state.subPaths,
+        isEmpty: false
+      });
+
+      console.log('Deleted sub-path:', deletedSubPath.index, 'Remaining:', this.state.subPaths.length);
+    } catch (error) {
+      console.error('Error deleting sub-path:', error);
+    }
+  }
+
+  private updateSubPathIndices(): void {
+    // Re-index all sub-paths to maintain sequential numbering
+    this.state.subPaths.forEach((subPath, index) => {
+      subPath.index = index + 1;
+      // Update color based on new index
+      subPath.color = this.colors[index % this.colors.length];
+    });
   }
 
   private clearState(): void {

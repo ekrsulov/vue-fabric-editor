@@ -69,7 +69,7 @@
               </span>
             </div>
           </div>
-          <div class="sub-path-joystick">
+          <div class="sub-path-controls">
             <div class="joystick-container">
               <button
                 class="joystick-btn joystick-up"
@@ -104,6 +104,16 @@
                 title="Mover abajo"
               >
                 <Icon type="ios-arrow-down" />
+              </button>
+            </div>
+            <div class="delete-container">
+              <button
+                class="delete-btn"
+                @click.stop.prevent="deleteSubPath(subPath.id)"
+                @mousedown.stop.prevent
+                title="Eliminar sub-path"
+              >
+                <Icon type="ios-trash" />
               </button>
             </div>
           </div>
@@ -233,6 +243,11 @@ const updateStrokeWidth = (newWidth: number) => {
 // Move sub-path by specified offset
 const moveSubPath = (subPathId: string, offsetX: number, offsetY: number) => {
   canvasEditor.moveSubPath(subPathId, offsetX, offsetY);
+};
+
+// Delete sub-path
+const deleteSubPath = (subPathId: string) => {
+  canvasEditor.deleteSubPath(subPathId);
 };
 
 const getSubPathColor = (color: string) => {
@@ -509,12 +524,33 @@ const handleSubPathMoved = (data: { subPath: SubPath; offsetX: number; offsetY: 
   }
 };
 
+const handleSubPathDeleted = (data: {
+  deletedSubPath: SubPath;
+  remainingSubPaths: SubPath[];
+  isEmpty: boolean;
+}) => {
+  // Update our local state with the remaining sub-paths
+  state.subPaths = [...data.remainingSubPaths];
+
+  // If the deleted sub-path was selected, clear selection
+  if (state.selectedSubPath === data.deletedSubPath.id) {
+    state.selectedSubPath = null;
+  }
+
+  // If no sub-paths remain, hide the panel
+  if (data.isEmpty) {
+    state.isVisible = false;
+    state.originalObject = null;
+  }
+};
+
 onMounted(() => {
   canvasEditor.on('subPathExtracted', handleSubPathExtracted);
   canvasEditor.on('subPathSelected', handleSubPathSelected);
   canvasEditor.on('subPathHighlighted', handleSubPathHighlighted);
   canvasEditor.on('subPathCleared', handleSubPathCleared);
   canvasEditor.on('subPathMoved', handleSubPathMoved);
+  canvasEditor.on('subPathDeleted', handleSubPathDeleted);
   canvasEditor.on('selectCancel', handleSelectionCleared);
 });
 
@@ -524,6 +560,7 @@ onBeforeUnmount(() => {
   canvasEditor.off('subPathHighlighted', handleSubPathHighlighted);
   canvasEditor.off('subPathCleared', handleSubPathCleared);
   canvasEditor.off('subPathMoved', handleSubPathMoved);
+  canvasEditor.off('subPathDeleted', handleSubPathDeleted);
   canvasEditor.off('selectCancel', handleSelectionCleared);
 });
 </script>
@@ -647,9 +684,12 @@ onBeforeUnmount(() => {
     }
   }
 
-  .sub-path-joystick {
+  .sub-path-controls {
     margin-left: 8px;
     flex-shrink: 0;
+    display: flex;
+    gap: 6px;
+    align-items: center;
 
     .joystick-container {
       display: grid;
@@ -699,6 +739,38 @@ onBeforeUnmount(() => {
       .joystick-up,
       .joystick-down {
         justify-self: center;
+      }
+    }
+
+    .delete-container {
+      display: flex;
+      align-items: center;
+
+      .delete-btn {
+        width: 22px;
+        height: 22px;
+        border: 1px solid #ff4d4f;
+        background: #fff;
+        border-radius: 3px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: #ff4d4f;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: #fff2f0;
+          border-color: #ff7875;
+          color: #ff7875;
+        }
+
+        &:active {
+          background: #ffebe8;
+          border-color: #d9363e;
+          color: #d9363e;
+        }
       }
     }
   }

@@ -7,14 +7,6 @@
     <div class="sub-path-header">
       <div class="header-info">
         <span class="total-count">{{ $t('subPaths.totalFound', { count: subPaths.length }) }}</span>
-        <Button
-          type="text"
-          size="small"
-          @click="toggleHighlights"
-          :icon="highlightVisible ? 'md-eye' : 'md-eye-off'"
-        >
-          {{ highlightVisible ? $t('subPaths.hideAll') : $t('subPaths.showAll') }}
-        </Button>
       </div>
     </div>
 
@@ -25,7 +17,6 @@
         class="sub-path-item"
         :class="{
           active: selectedSubPath === subPath.id,
-          highlighted: subPath.isHighlighted,
         }"
         @click="selectSubPath(subPath.id)"
       >
@@ -45,14 +36,6 @@
                 {{ subPath.stats.totalPoints }}{{ $t('subPaths.points') }}
               </span>
             </div>
-          </div>
-          <div class="sub-path-actions">
-            <Button
-              type="text"
-              size="small"
-              :icon="subPath.isHighlighted ? 'md-eye' : 'md-eye-off'"
-              @click.stop="toggleHighlight(subPath.id)"
-            ></Button>
           </div>
         </div>
 
@@ -120,17 +103,6 @@
         </div>
       </div>
     </div>
-
-    <div class="sub-path-global-actions" v-if="subPaths.length > 1">
-      <ButtonGroup size="small">
-        <Button @click="selectAllSubPaths" icon="md-checkmark-circle">
-          {{ $t('subPaths.selectAll') }}
-        </Button>
-        <Button @click="clearAllHighlights" icon="md-close-circle">
-          {{ $t('subPaths.clearAll') }}
-        </Button>
-      </ButtonGroup>
-    </div>
   </div>
 </template>
 
@@ -160,14 +132,12 @@ const { canvasEditor } = useSelect();
 const state = reactive({
   subPaths: [] as SubPath[],
   selectedSubPath: null as string | null,
-  highlightVisible: true,
   isVisible: false,
   originalObject: null as any,
 });
 
 const subPaths = computed(() => state.subPaths);
 const selectedSubPath = computed(() => state.selectedSubPath);
-const highlightVisible = computed(() => state.highlightVisible);
 
 const selectSubPath = (subPathId: string) => {
   if (state.selectedSubPath === subPathId) {
@@ -179,42 +149,7 @@ const selectSubPath = (subPathId: string) => {
   }
 };
 
-const toggleHighlight = (subPathId: string) => {
-  const subPath = state.subPaths.find((sp) => sp.id === subPathId);
-  if (!subPath) return;
-
-  if (subPath.isHighlighted) {
-    canvasEditor.clearHighlights();
-  } else {
-    canvasEditor.highlightSubPath(subPathId);
-  }
-};
-
-const toggleHighlights = () => {
-  state.highlightVisible = !state.highlightVisible;
-  if (state.highlightVisible) {
-    // Show all highlights
-    state.subPaths.forEach((subPath) => {
-      if (state.selectedSubPath === subPath.id) {
-        canvasEditor.highlightSubPath(subPath.id);
-      }
-    });
-  } else {
-    // Hide all highlights
-    canvasEditor.clearHighlights();
-  }
-};
-
-const selectAllSubPaths = () => {
-  state.subPaths.forEach((subPath) => {
-    canvasEditor.highlightSubPath(subPath.id);
-  });
-};
-
-const clearAllHighlights = () => {
-  canvasEditor.clearHighlights();
-  state.selectedSubPath = null;
-};
+// Simplified: Only selection logic remains - highlighting is handled automatically by selectSubPath
 
 const getSubPathColor = (color: string) => {
   // Convert hex color to ViewUI color name or return custom color
@@ -317,17 +252,11 @@ const handleSubPathSelected = (data: { subPath: SubPath }) => {
   state.selectedSubPath = data.subPath.id;
 };
 
-const handleSubPathHighlighted = (data: { subPath: SubPath }) => {
-  const subPath = state.subPaths.find((sp) => sp.id === data.subPath.id);
-  if (subPath) {
-    subPath.isHighlighted = true;
-  }
+const handleSubPathHighlighted = () => {
+  // Highlighting is now handled automatically by selection
 };
 
 const handleSubPathCleared = () => {
-  state.subPaths.forEach((subPath) => {
-    subPath.isHighlighted = false;
-  });
   state.selectedSubPath = null;
 };
 
@@ -360,9 +289,6 @@ onBeforeUnmount(() => {
   margin-bottom: 12px;
 
   .header-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     padding: 8px 0;
 
     .total-count {
@@ -393,10 +319,6 @@ onBeforeUnmount(() => {
   &.active {
     border-color: #1890ff;
     background-color: #f6ffed;
-  }
-
-  &.highlighted {
-    border-left: 4px solid #52c41a;
   }
 }
 
@@ -433,10 +355,6 @@ onBeforeUnmount(() => {
         border-radius: 10px;
       }
     }
-  }
-
-  .sub-path-actions {
-    flex-shrink: 0;
   }
 }
 
@@ -500,13 +418,6 @@ onBeforeUnmount(() => {
   .detail-actions {
     text-align: center;
   }
-}
-
-.sub-path-global-actions {
-  margin-top: 12px;
-  text-align: center;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
 }
 
 // Scrollbar styling

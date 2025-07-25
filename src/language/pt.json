@@ -300,6 +300,9 @@
   "ok": "Confirmar",
   "cancel": "Cancelar",
   "cleanUp": "Limpar",
+  "copy": "Copiar",
+  "export": "Exportar",
+  "duplicate": "Duplicar",
   "login": {
     "title": "Bem-vindo",
     "welcome": "Bem-vindo ao FastGraph",

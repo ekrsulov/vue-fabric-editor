@@ -293,6 +293,20 @@
     "isClosed": "Closed path",
     "length": "Length"
   },
+  "subPaths": {
+    "title": "Sub-Paths",
+    "totalFound": "Found {count} sub-paths",
+    "hideAll": "Hide all",
+    "showAll": "Show all",
+    "subPathTitle": "Sub-path {index}",
+    "commands": "cmds",
+    "points": "pts",
+    "closed": "Closed",
+    "length": "Length",
+    "pathData": "Path data",
+    "selectAll": "Select all",
+    "clearAll": "Clear all"
+  },
   "setSizeTip": "Adjust canvas size",
   "tip": "Tip",
   "clearTip": "Are you sure you want to clear?",
@@ -300,6 +314,9 @@
   "ok": "Confirm",
   "cancel": "Cancel",
   "cleanUp": "Clear",
+  "copy": "Copy",
+  "export": "Export",
+  "duplicate": "Duplicate",
   "login": {
     "title": "Welcome",
     "welcome": "Welcome to FastGraph",

@@ -31,6 +31,7 @@ import attributeColor from '@/components/attributeColor.vue';
 import attributeBarcode from '@/components/attributeBarcode.vue';
 import attributeQrCode from '@/components/attributeQrCode.vue';
 import attributePathData from '@/components/attributePathData.vue';
+import subPathPanel from '@/components/subPathPanel.vue';
 import cropperImg from '@/components/cropperImg.vue';
 // hooks
 import useSelectListen from '@/hooks/useSelectListen';
@@ -120,6 +121,8 @@ const switchAttrBar = () => {
         <attributeRounded></attributeRounded>
         <!-- 路径数据 -->
         <attributePathData></attributePathData>
+        <!-- 子路径面板 -->
+        <subPathPanel></subPathPanel>
         <!-- 关联数据 -->
         <attributeId></attributeId>
 

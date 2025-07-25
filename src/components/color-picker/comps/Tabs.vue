@@ -49,12 +49,26 @@ watch(
 const tabs = ref([]);
 const sliderStyle = reactive({ width: 0, left: 0 });
 let tabWidth = 0;
+
+// Watch for changes in tabs array to recalculate width
+watch(
+  () => tabs.value.length,
+  (newLength) => {
+    if (newLength > 0) {
+      tabWidth = 100 / newLength;
+      sliderStyle.width = `${tabWidth}%`;
+      changeTab();
+    }
+  }
+);
+
 onMounted(() => {
   // 初始化数据
-  tabWidth = 100 / tabs.value.length;
-  sliderStyle.width = `${tabWidth}%`;
-
-  changeTab();
+  if (tabs.value.length > 0) {
+    tabWidth = 100 / tabs.value.length;
+    sliderStyle.width = `${tabWidth}%`;
+    changeTab();
+  }
 });
 
 let preActiveTabVM = null;
@@ -62,6 +76,12 @@ async function changeTab(index = -1) {
   if (index < 0) {
     index = tabs.value.findIndex((vm) => vm.props.label === props.value);
   }
+
+  // Check if index is valid
+  if (index < 0 || index >= tabs.value.length) {
+    return;
+  }
+
   sliderStyle.left = `${tabWidth * index}%`;
 
   // 切换 tab 内容
@@ -69,7 +89,13 @@ async function changeTab(index = -1) {
     await nextTick();
     preActiveTabVM?.exposed?.changeActive?.(false);
     preActiveTabVM = tabs.value[index];
-    preActiveTabVM.exposed?.changeActive?.(true);
+    if (
+      preActiveTabVM &&
+      preActiveTabVM.exposed &&
+      typeof preActiveTabVM.exposed.changeActive === 'function'
+    ) {
+      preActiveTabVM.exposed.changeActive(true);
+    }
   } catch (error) {
     console.log(error);
   }

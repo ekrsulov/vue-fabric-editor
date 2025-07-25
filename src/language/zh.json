@@ -293,6 +293,20 @@
     "isClosed": "路径闭合",
     "length": "长度"
   },
+  "subPaths": {
+    "title": "子路径",
+    "totalFound": "发现{count}个子路径",
+    "hideAll": "隐藏所有",
+    "showAll": "显示所有",
+    "subPathTitle": "子路径{index}",
+    "commands": "命令",
+    "points": "点",
+    "closed": "闭合",
+    "length": "长度",
+    "pathData": "路径数据",
+    "selectAll": "全选",
+    "clearAll": "清除所有"
+  },
   "setSizeTip": "调整画布尺寸",
   "tip": "提示",
   "clearTip": "确定要清空吗？",
@@ -300,6 +314,9 @@
   "ok": "确认",
   "cancel": "取消",
   "cleanUp": "清除",
+  "copy": "复制",
+  "export": "导出",
+  "duplicate": "复制",
   "login": {
     "title": "欢迎使用",
     "welcome": "欢迎使用快图",

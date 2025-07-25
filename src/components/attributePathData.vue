@@ -64,6 +64,23 @@
           </Col>
         </Row>
       </div>
+
+      <div class="sub-paths-actions" v-if="hasMultipleMoveTo">
+        <Button
+          type="primary"
+          size="small"
+          icon="md-git-branch"
+          @click="analyzeSubPaths"
+          :loading="analyzingSubPaths"
+        >
+          {{ $t('subPaths.title') }}
+        </Button>
+        <div class="sub-paths-info" v-if="detectedSubPaths > 0">
+          <span class="info-text">
+            {{ $t('subPaths.totalFound', { count: detectedSubPaths }) }}
+          </span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -77,6 +94,9 @@ const { canvasEditor, isOne } = useSelect();
 const pathCommands = ref([]);
 const pathStats = ref(null);
 const isPathType = ref(false);
+const hasMultipleMoveTo = ref(false);
+const detectedSubPaths = ref(0);
+const analyzingSubPaths = ref(false);
 
 const checkIsPathType = (activeObject) => {
   if (!activeObject) {
@@ -469,8 +489,37 @@ const getObjectAttr = (e) => {
 
   if (pathCommands.value.length > 0) {
     pathStats.value = calculatePathStats(pathCommands.value);
+    // Check for multiple MoveTo commands
+    checkMultipleMoveTo();
   } else {
     pathStats.value = null;
+    hasMultipleMoveTo.value = false;
+    detectedSubPaths.value = 0;
+  }
+};
+
+const checkMultipleMoveTo = () => {
+  const moveToCommands = pathCommands.value.filter((cmd) => cmd.type.toLowerCase() === 'm');
+
+  hasMultipleMoveTo.value = moveToCommands.length > 1;
+  detectedSubPaths.value = moveToCommands.length;
+};
+
+const analyzeSubPaths = async () => {
+  const activeObject = canvasEditor.canvas.getActiveObject();
+  if (!activeObject || !hasMultipleMoveTo.value) return;
+
+  analyzingSubPaths.value = true;
+
+  try {
+    // Use the SubPathManagerPlugin to extract sub-paths
+    if (canvasEditor.extractSubPaths) {
+      await canvasEditor.extractSubPaths(activeObject);
+    }
+  } catch (error) {
+    console.error('Error analyzing sub-paths:', error);
+  } finally {
+    analyzingSubPaths.value = false;
   }
 };
 
@@ -478,6 +527,9 @@ const selectCancel = () => {
   isPathType.value = false;
   pathCommands.value = [];
   pathStats.value = null;
+  hasMultipleMoveTo.value = false;
+  detectedSubPaths.value = 0;
+  analyzingSubPaths.value = false;
   update?.proxy?.$forceUpdate();
 };
 
@@ -608,5 +660,26 @@ onBeforeUnmount(() => {
 
 .path-commands-list::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+.sub-paths-actions {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  text-align: center;
+
+  .sub-paths-info {
+    margin-top: 8px;
+
+    .info-text {
+      font-size: 12px;
+      color: #666;
+      background: #e6f7ff;
+      padding: 4px 8px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+  }
 }
 </style>

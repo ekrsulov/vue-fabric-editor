@@ -293,6 +293,20 @@
     "isClosed": "Ruta cerrada",
     "length": "Longitud"
   },
+  "subPaths": {
+    "title": "Sub-Rutas",
+    "totalFound": "Se encontraron {count} sub-rutas",
+    "hideAll": "Ocultar todo",
+    "showAll": "Mostrar todo",
+    "subPathTitle": "Sub-ruta {index}",
+    "commands": "cmds",
+    "points": "pts",
+    "closed": "Cerrada",
+    "length": "Longitud",
+    "pathData": "Datos de ruta",
+    "selectAll": "Seleccionar todo",
+    "clearAll": "Limpiar todo"
+  },
   "setSizeTip": "Ajustar tamaño del lienzo",
   "tip": "Consejo",
   "clearTip": "¿Estás seguro de que quieres limpiar?",
@@ -300,6 +314,9 @@
   "ok": "Confirmar",
   "cancel": "Cancelar",
   "cleanUp": "Limpiar",
+  "copy": "Copiar",
+  "export": "Exportar",
+  "duplicate": "Duplicar",
   "login": {
     "title": "Bienvenido",
     "welcome": "Bienvenido a FastGraph",

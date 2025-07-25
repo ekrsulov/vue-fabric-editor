@@ -72,6 +72,7 @@ import Editor, {
   ResizePlugin,
   LockPlugin,
   AddBaseTypePlugin,
+  SubPathManagerPlugin,
   MaskPlugin,
 } from '@kuaitu/core';
 
@@ -135,6 +136,7 @@ onMounted(() => {
     .use(ResizePlugin)
     .use(LockPlugin)
     .use(AddBaseTypePlugin)
+    .use(SubPathManagerPlugin)
     .use(MaskPlugin);
 
   state.show = true;

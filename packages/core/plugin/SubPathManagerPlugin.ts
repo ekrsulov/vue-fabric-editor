@@ -453,6 +453,7 @@ export default class SubPathManagerPlugin implements IPluginTempl {
         // Ensure the cloned path maintains all transformations
         this.canvas.add(clonedPath);
         this.state.highlightObjects.push(clonedPath);
+        console.log('Highlighting sub-path:', clonedPath);
         this.canvas.renderAll();
 
         subPath.isHighlighted = true;
@@ -927,6 +928,18 @@ export default class SubPathManagerPlugin implements IPluginTempl {
     const points: EditablePoint[] = [];
     const controlPairs: ControlPointPair[] = [];
 
+    // Debug: Log original object properties
+    console.log('Original object properties:', {
+      left: this.state.originalObject?.left,
+      top: this.state.originalObject?.top,
+      width: this.state.originalObject?.width,
+      height: this.state.originalObject?.height,
+      scaleX: this.state.originalObject?.scaleX,
+      scaleY: this.state.originalObject?.scaleY,
+      pathOffset: (this.state.originalObject as any)?.pathOffset,
+      path: this.state.originalObject?.path?.slice(0, 5) // First 5 path commands
+    });
+
     // Get the original path coordinates (without transformations)
     const originalCoords = this.getOriginalPathCoordinates(subPath);
 
@@ -1223,51 +1236,153 @@ export default class SubPathManagerPlugin implements IPluginTempl {
       originY: originalObj.originY,
     });
 
-    this.state.editablePoints.forEach((point, index) => {
-      console.log(`Point ${index}:`, { id: point.id, x: point.x, y: point.y, type: point.type });
-
-      // Transform point coordinates according to original object's transformation
-      const transformedCoords = this.transformPointCoordinates(point.x, point.y, originalObj);
-
-      console.log(`Transformed to:`, transformedCoords);
-
-      const pointObj = new fabric.Circle({
-        left: transformedCoords.x,
-        top: transformedCoords.y,
-        radius: point.type === 'anchor' ? 6 : 4,
-        fill: this.getPointColor(point.type),
-        stroke: point.type === 'anchor' ? '#1890ff' : '#ff7875',
-        strokeWidth: 2,
-        selectable: true,
-        evented: true,
-        originX: 'center',
-        originY: 'center',
-        excludeFromExport: true,
-        hoverCursor: 'move',
-        moveCursor: 'move',
+    // Use the same cloning approach as highlightSubPath
+    originalObj.clone((clonedPath: fabric.Path) => {
+      console.log('Cloned path properties:', {
+        left: clonedPath.left,
+        top: clonedPath.top,
+        cacheTranslationX: (clonedPath as any).cacheTranslationX,
+        cacheTranslationY: (clonedPath as any).cacheTranslationY,
+        ownMatrixCache: (clonedPath as any).ownMatrixCache,
+        scaleX: clonedPath.scaleX,
+        scaleY: clonedPath.scaleY,
+        angle: clonedPath.angle,
       });
 
-      // Store reference to the point data
-      (pointObj as any).editablePointId = point.id;
+      this.state.editablePoints.forEach((point, index) => {
+        console.log(`Point ${index}:`, { id: point.id, x: point.x, y: point.y, type: point.type });
 
-      // Add event listeners for point interaction
-      pointObj.on('mousedown', () => {
-        this.selectEditablePoint(point.id);
+        // Use the cloned path's transformation matrix to calculate point position
+        const transformedPoint = this.transformPointUsingClonedPath(point, clonedPath);
+
+        console.log(`Transformed point coordinates:`, transformedPoint);
+
+        const pointObj = new fabric.Circle({
+          left: transformedPoint.x,
+          top: transformedPoint.y,
+          radius: point.type === 'anchor' ? 6 : 4,
+          fill: this.getPointColor(point.type),
+          stroke: point.type === 'anchor' ? '#1890ff' : '#ff7875',
+          strokeWidth: 2,
+          selectable: true,
+          evented: true,
+          originX: 'center',
+          originY: 'center',
+          excludeFromExport: true,
+          hoverCursor: 'move',
+          moveCursor: 'move',
+        });
+
+        // Store reference to the point data
+        (pointObj as any).editablePointId = point.id;
+
+        // Add event listeners for point interaction
+        pointObj.on('mousedown', () => {
+          this.selectEditablePoint(point.id);
+        });
+
+        pointObj.on('moving', (e) => {
+          const obj = e.target as fabric.Circle;
+          this.handlePointMove(point.id, obj.left!, obj.top!);
+        });
+
+        // Ensure point coordinates are properly set
+        pointObj.setCoords();
+
+        this.canvas.add(pointObj);
+        this.state.pointObjects.push(pointObj);
       });
 
-      pointObj.on('moving', (e) => {
-        const obj = e.target as fabric.Circle;
-        this.handlePointMove(point.id, obj.left!, obj.top!);
-      });
-
-      // Ensure point coordinates are properly set
-      pointObj.setCoords();
-
-      this.canvas.add(pointObj);
-      this.state.pointObjects.push(pointObj);
+      this.canvas.renderAll();
     });
+  }
 
-    this.canvas.renderAll();
+  private transformPointUsingClonedPath(
+    point: EditablePoint,
+    clonedPath: fabric.Path
+  ): { x: number; y: number } {
+    // NEW APPROACH: Find the point coordinates directly from the cloned path's actual path array
+    // The cloned path should contain the transformed coordinates we need
+    
+    const canvas = clonedPath.canvas || this.canvas;
+    
+    // Look for matching coordinates in the cloned path's path array
+    if (clonedPath.path && Array.isArray(clonedPath.path)) {
+      for (let i = 0; i < clonedPath.path.length; i++) {
+        const cmd = clonedPath.path[i];
+        if (Array.isArray(cmd) && cmd.length >= 3) {
+          const [cmdType, cmdX, cmdY] = cmd;
+          
+          // Check if this path command matches our point coordinates (with some tolerance)
+          if (Math.abs(cmdX - point.x) < 0.1 && Math.abs(cmdY - point.y) < 0.1) {
+            console.log(`Found matching path command at index ${i}: [${cmdType}, ${cmdX}, ${cmdY}]`);
+            
+            // CORRECTED APPROACH: PathOffset is center point, not top-left
+            console.log(`Raw path coordinates: (${cmdX}, ${cmdY})`);
+            
+            const pathOffset = (clonedPath as any).pathOffset || { x: 0, y: 0 };
+            console.log(`Path offset: (${pathOffset.x}, ${pathOffset.y})`);
+            console.log(`Path dimensions: ${clonedPath.width}x${clonedPath.height}`);
+            
+            // PathOffset appears to be the center point of the path's bounding box
+            // So we need to convert from center-based to top-left-based coordinates
+            const halfWidth = clonedPath.width! / 2;
+            const halfHeight = clonedPath.height! / 2;
+            
+            // Calculate the actual top-left corner of the original path
+            const topLeftX = pathOffset.x - halfWidth;
+            const topLeftY = pathOffset.y - halfHeight;
+            
+            console.log(`Calculated top-left: (${topLeftX}, ${topLeftY})`);
+            
+            // Now convert path coordinates to relative coordinates (0-1 range)
+            const relativeX = (cmdX - topLeftX) / clonedPath.width!;
+            const relativeY = (cmdY - topLeftY) / clonedPath.height!;
+            console.log(`Relative coords: (${relativeX}, ${relativeY})`);
+            
+            // Apply relative coordinates to the scaled and positioned path
+            const scaledWidth = clonedPath.width! * clonedPath.scaleX!;
+            const scaledHeight = clonedPath.height! * clonedPath.scaleY!;
+            
+            // Calculate final position accounting for object's origin
+            // Fabric objects are positioned by their center by default
+            const objCenterX = clonedPath.left! + (scaledWidth / 2);
+            const objCenterY = clonedPath.top! + (scaledHeight / 2);
+            
+            const finalX = objCenterX - (scaledWidth / 2) + (relativeX * scaledWidth);
+            const finalY = objCenterY - (scaledHeight / 2) + (relativeY * scaledHeight);
+            
+            console.log(`Object center: (${objCenterX}, ${objCenterY})`);
+            console.log(`Final coordinates: (${finalX}, ${finalY})`);
+            
+            return {
+              x: finalX,
+              y: finalY,
+            };
+          }
+        }
+      }
+    }
+    
+    // FALLBACK: If no direct match found in path array, try the original PolygonModifyPlugin approach
+    console.log('No direct path match found, using polygon-style transformation');
+    
+    const pathOffset = (clonedPath as any).pathOffset || { x: 0, y: 0 };
+    const adjustedX = point.x - pathOffset.x;
+    const adjustedY = point.y - pathOffset.y;
+    
+    const transformedPoint = fabric.util.transformPoint(
+      new fabric.Point(adjustedX, adjustedY),
+      fabric.util.multiplyTransformMatrices(
+        canvas.viewportTransform,
+        clonedPath.calcTransformMatrix()
+      )
+    );
+    
+    return {
+      x: transformedPoint.x,
+      y: transformedPoint.y,
+    };
   }
 
   private transformPointCoordinates(
@@ -1275,58 +1390,28 @@ export default class SubPathManagerPlugin implements IPluginTempl {
     y: number,
     originalObj: fabric.Path
   ): { x: number; y: number } {
-    // ENFOQUE SIMPLE: Aplicar transformaciones básicas directamente
-    console.log(`SIMPLE TRANSFORM: Path coords: (${x}, ${y})`);
-    console.log(`Object: left=${originalObj.left}, top=${originalObj.top}, scale=${originalObj.scaleX}x${originalObj.scaleY}, angle=${originalObj.angle}`);
+    // Use the same approach as PolygonModifyPlugin for consistency
+    const pathOffset = (originalObj as any).pathOffset || { x: 0, y: 0 };
     
-    // Obtener las dimensiones del objeto original
-    const objWidth = originalObj.width || 0;
-    const objHeight = originalObj.height || 0;
+    // Adjust point coordinates relative to pathOffset (like polygon points)
+    const adjustedX = x - pathOffset.x;
+    const adjustedY = y - pathOffset.y;
     
-    console.log(`Object dimensions: ${objWidth}x${objHeight}`);
+    // Use the plugin's canvas reference
+    const canvas = originalObj.canvas || this.canvas;
     
-    // Convertir coordenadas del path a coordenadas relativas al centro del objeto
-    // Las coordenadas del path están en el sistema de coordenadas del path original
-    // Las necesitamos convertir a coordenadas relativas al centro
-    const relativeX = x - objWidth / 2;
-    const relativeY = y - objHeight / 2;
-    
-    console.log(`Relative to object center: (${relativeX}, ${relativeY})`);
-    
-    // Aplicar escala
-    const scaleX = originalObj.scaleX || 1;
-    const scaleY = originalObj.scaleY || 1;
-    
-    let transformedX = relativeX * scaleX;
-    let transformedY = relativeY * scaleY;
-    
-    console.log(`After scaling: (${transformedX}, ${transformedY})`);
-    
-    // Aplicar rotación si existe
-    const angle = originalObj.angle || 0;
-    if (angle !== 0) {
-      const rad = fabric.util.degreesToRadians(angle);
-      const cos = Math.cos(rad);
-      const sin = Math.sin(rad);
-      
-      const rotatedX = transformedX * cos - transformedY * sin;
-      const rotatedY = transformedX * sin + transformedY * cos;
-      
-      transformedX = rotatedX;
-      transformedY = rotatedY;
-      
-      console.log(`After rotation: (${transformedX}, ${transformedY})`);
-    }
-    
-    // Trasladar a la posición final del objeto en el canvas
-    const finalX = transformedX + (originalObj.left || 0);
-    const finalY = transformedY + (originalObj.top || 0);
-    
-    console.log(`Final coords: (${finalX}, ${finalY})`);
+    // Transform point using the same method as polygon points
+    const transformedPoint = fabric.util.transformPoint(
+      new fabric.Point(adjustedX, adjustedY), // Object coordinate system position
+      fabric.util.multiplyTransformMatrices(
+        canvas.viewportTransform,
+        originalObj.calcTransformMatrix()
+      )
+    );
     
     return {
-      x: finalX,
-      y: finalY,
+      x: transformedPoint.x,
+      y: transformedPoint.y,
     };
   }
 
@@ -1408,52 +1493,28 @@ export default class SubPathManagerPlugin implements IPluginTempl {
     y: number,
     originalObj: fabric.Path
   ): { x: number; y: number } {
-    // ENFOQUE SIMPLE INVERSO: de coordenadas del canvas a coordenadas del path
-    console.log(`INVERSE TRANSFORM: Canvas coords: (${x}, ${y})`);
-
-    // Paso 1: Quitar la traslación del objeto
-    let localX = x - (originalObj.left || 0);
-    let localY = y - (originalObj.top || 0);
-
-    console.log(`After removing translation: (${localX}, ${localY})`);
-
-    // Paso 2: Quitar rotación si existe
-    const angle = originalObj.angle || 0;
-    if (angle !== 0) {
-      const rad = fabric.util.degreesToRadians(-angle); // ángulo negativo para inversión
-      const cos = Math.cos(rad);
-      const sin = Math.sin(rad);
-
-      const unrotatedX = localX * cos - localY * sin;
-      const unrotatedY = localX * sin + localY * cos;
-
-      localX = unrotatedX;
-      localY = unrotatedY;
-
-      console.log(`After removing rotation: (${localX}, ${localY})`);
-    }
-
-    // Paso 3: Quitar escala
-    const scaleX = originalObj.scaleX || 1;
-    const scaleY = originalObj.scaleY || 1;
-
-    localX = localX / scaleX;
-    localY = localY / scaleY;
-
-    console.log(`After removing scaling: (${localX}, ${localY})`);
-
-    // Paso 4: Convertir de coordenadas relativas al centro a coordenadas absolutas del path
-    const objWidth = originalObj.width || 0;
-    const objHeight = originalObj.height || 0;
-
-    const pathX = localX + objWidth / 2;
-    const pathY = localY + objHeight / 2;
-
-    console.log(`Final path coords: (${pathX}, ${pathY})`);
-
+    // Inverse transform using the same matrix approach as PolygonModifyPlugin
+    const canvasPoint = new fabric.Point(x, y);
+    
+    // Use the plugin's canvas reference
+    const canvas = originalObj.canvas || this.canvas;
+    
+    // Get the inverse transformation matrix
+    const transformMatrix = fabric.util.multiplyTransformMatrices(
+      canvas.viewportTransform,
+      originalObj.calcTransformMatrix()
+    );
+    
+    // Apply inverse transformation
+    const invertedMatrix = fabric.util.invertTransform(transformMatrix);
+    const localPoint = fabric.util.transformPoint(canvasPoint, invertedMatrix);
+    
+    // Add pathOffset back (reverse of what we did in transformPointUsingClonedPath)
+    const pathOffset = (originalObj as any).pathOffset || { x: 0, y: 0 };
+    
     return {
-      x: pathX,
-      y: pathY,
+      x: localPoint.x + pathOffset.x,
+      y: localPoint.y + pathOffset.y,
     };
   }
 

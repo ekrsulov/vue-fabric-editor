@@ -98,6 +98,7 @@ export default class SubPathManagerPlugin implements IPluginTempl {
     'selectEditablePoint',
     'moveEditablePoint',
     'updateControlPointPair',
+    'checkCurrentSelection',
   ];
   static events = [
     'subPathExtracted',
@@ -145,6 +146,7 @@ export default class SubPathManagerPlugin implements IPluginTempl {
   private bindEvents() {
     this.canvas.on('selection:created', this.handleSelection.bind(this));
     this.canvas.on('selection:updated', this.handleSelection.bind(this));
+    this.canvas.on('object:selected', this.handleSelection.bind(this)); // Additional event
     this.canvas.on('selection:cleared', this.handleSelectionCleared.bind(this));
     this.canvas.on('object:modified', this.handleObjectModified.bind(this));
     this.canvas.on('object:scaling', this.handleObjectTransform.bind(this));
@@ -153,11 +155,19 @@ export default class SubPathManagerPlugin implements IPluginTempl {
   }
 
   private handleSelection(e: fabric.IEvent) {
-    const activeObject = e.target as fabric.Path;
+    // Try multiple ways to get the active object
+    let activeObject = e.target as fabric.Path;
+    
+    // Fallback: if e.target is undefined, get from canvas directly
+    if (!activeObject) {
+      activeObject = this.canvas.getActiveObject() as fabric.Path;
+    }
+    
+            
     if (this.isPathWithMultipleM(activeObject)) {
-      this.extractSubPaths(activeObject);
+            this.extractSubPaths(activeObject);
     } else {
-      this.clearState();
+            this.clearState();
     }
   }
 
@@ -221,7 +231,7 @@ export default class SubPathManagerPlugin implements IPluginTempl {
     }
 
     const mCount = (pathData.match(/[Mm]/g) || []).length;
-    return mCount > 1;
+        return mCount >= 1; // Changed: Now shows sub-paths panel even for single sub-path
   }
 
   private fabricPathToString(pathArray: any[]): string {
@@ -236,8 +246,9 @@ export default class SubPathManagerPlugin implements IPluginTempl {
   }
 
   extractSubPaths(pathObject: fabric.Path): SubPath[] {
-    if (!this.isPathWithMultipleM(pathObject)) {
-      return [];
+    const hasMultipleM = this.isPathWithMultipleM(pathObject);
+        if (!hasMultipleM) {
+            return [];
     }
 
     this.state.originalObject = pathObject;
@@ -263,6 +274,7 @@ export default class SubPathManagerPlugin implements IPluginTempl {
       color: this.colors[index % this.colors.length],
     }));
 
+    
     this.editor.emit('subPathExtracted', {
       subPaths: this.state.subPaths,
       originalObject: pathObject,
@@ -272,7 +284,7 @@ export default class SubPathManagerPlugin implements IPluginTempl {
   }
 
   private splitPathByM(pathData: string): string[] {
-    const subPaths: string[] = [];
+        const subPaths: string[] = [];
     const commandRegex =
       /([MmLlHhVvCcSsQqTtAaZz])((?:\s*[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?\s*,?\s*)*)/g;
 
@@ -299,7 +311,8 @@ export default class SubPathManagerPlugin implements IPluginTempl {
       subPaths.push(currentSubPath.trim());
     }
 
-    return subPaths.filter((path) => path.length > 0);
+    const filtered = subPaths.filter((path) => path.length > 0);
+            return filtered;
   }
 
   private parsePathData(pathDataString: string): PathCommand[] {
@@ -1828,9 +1841,20 @@ export default class SubPathManagerPlugin implements IPluginTempl {
     }
   }
 
+  checkCurrentSelection(): void {
+    const activeObject = this.canvas.getActiveObject() as fabric.Path;
+        
+    if (this.isPathWithMultipleM(activeObject)) {
+            this.extractSubPaths(activeObject);
+    } else {
+            this.clearState();
+    }
+  }
+
   destroy(): void {
     this.canvas.off('selection:created', this.handleSelection);
     this.canvas.off('selection:updated', this.handleSelection);
+    this.canvas.off('object:selected', this.handleSelection); // Remove additional event
     this.canvas.off('selection:cleared', this.handleSelectionCleared);
     this.canvas.off('object:modified', this.handleObjectModified);
     this.canvas.off('object:scaling', this.handleObjectTransform);

@@ -1,5 +1,5 @@
 <template>
-  <div class="box" v-if="subPaths.length > 0">
+  <div class="box" v-if="subPaths.length >= 1">
     <Divider plain orientation="left">
       <h4>{{ $t('subPaths.title') }}</h4>
     </Divider>

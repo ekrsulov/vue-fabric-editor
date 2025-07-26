@@ -36,9 +36,6 @@
         @click="selectSubPath(subPath.id)"
       >
         <div class="sub-path-header-item">
-          <div class="sub-path-index">
-            <Badge :color="getSubPathColor(subPath.color)" :text="`${subPath.index}`" />
-          </div>
           <div class="sub-path-preview">
             <svg
               class="preview-svg"
@@ -104,6 +101,17 @@
                 title="Mover abajo"
               >
                 <Icon type="ios-arrow-down" />
+              </button>
+            </div>
+            <div class="edit-points-container">
+              <button
+                class="edit-points-btn"
+                :class="{ active: state.editingMode && state.editingSubPathId === subPath.id }"
+                @click.stop.prevent="togglePointEditingMode(subPath.id)"
+                @mousedown.stop.prevent
+                title="Editar puntos"
+              >
+                <Icon type="ios-brush" />
               </button>
             </div>
             <div class="delete-container">
@@ -215,6 +223,8 @@ const state = reactive({
   isVisible: false,
   originalObject: null as any,
   highlightStrokeWidth: 1,
+  editingMode: false,
+  editingSubPathId: null as string | null,
 });
 
 const subPaths = computed(() => state.subPaths);
@@ -248,6 +258,17 @@ const moveSubPath = (subPathId: string, offsetX: number, offsetY: number) => {
 // Delete sub-path
 const deleteSubPath = (subPathId: string) => {
   canvasEditor.deleteSubPath(subPathId);
+};
+
+// Toggle point editing mode
+const togglePointEditingMode = (subPathId: string) => {
+  if (state.editingMode && state.editingSubPathId === subPathId) {
+    // Disable point editing mode
+    canvasEditor.disablePointEditingMode();
+  } else {
+    // Enable point editing mode for this sub-path
+    canvasEditor.enablePointEditingMode(subPathId);
+  }
 };
 
 const getSubPathColor = (color: string) => {
@@ -537,11 +558,42 @@ const handleSubPathDeleted = (data: {
     state.selectedSubPath = null;
   }
 
+  // If the deleted sub-path was being edited, clear editing mode
+  if (state.editingSubPathId === data.deletedSubPath.id) {
+    state.editingMode = false;
+    state.editingSubPathId = null;
+  }
+
   // If no sub-paths remain, hide the panel
   if (data.isEmpty) {
     state.isVisible = false;
     state.originalObject = null;
+    state.editingMode = false;
+    state.editingSubPathId = null;
   }
+};
+
+const handlePointEditingModeChanged = (data: { enabled: boolean; subPathId?: string }) => {
+  state.editingMode = data.enabled;
+  state.editingSubPathId = data.enabled ? data.subPathId || null : null;
+};
+
+const handleEditablePointSelected = (data: { point: any; pointId: string }) => {
+  console.log('Point selected:', data.point);
+};
+
+const handleEditablePointMoved = (data: {
+  point: any;
+  oldX: number;
+  oldY: number;
+  newX: number;
+  newY: number;
+}) => {
+  console.log('Point moved:', data);
+};
+
+const handleControlPointPairUpdated = (data: { pair: any; isSynchronized: boolean }) => {
+  console.log('Control point pair updated:', data);
 };
 
 onMounted(() => {
@@ -552,6 +604,10 @@ onMounted(() => {
   canvasEditor.on('subPathMoved', handleSubPathMoved);
   canvasEditor.on('subPathDeleted', handleSubPathDeleted);
   canvasEditor.on('selectCancel', handleSelectionCleared);
+  canvasEditor.on('pointEditingModeChanged', handlePointEditingModeChanged);
+  canvasEditor.on('editablePointSelected', handleEditablePointSelected);
+  canvasEditor.on('editablePointMoved', handleEditablePointMoved);
+  canvasEditor.on('controlPointPairUpdated', handleControlPointPairUpdated);
 });
 
 onBeforeUnmount(() => {
@@ -562,6 +618,10 @@ onBeforeUnmount(() => {
   canvasEditor.off('subPathMoved', handleSubPathMoved);
   canvasEditor.off('subPathDeleted', handleSubPathDeleted);
   canvasEditor.off('selectCancel', handleSelectionCleared);
+  canvasEditor.off('pointEditingModeChanged', handlePointEditingModeChanged);
+  canvasEditor.off('editablePointSelected', handleEditablePointSelected);
+  canvasEditor.off('editablePointMoved', handleEditablePointMoved);
+  canvasEditor.off('controlPointPairUpdated', handleControlPointPairUpdated);
 });
 </script>
 
@@ -632,11 +692,6 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   padding: 10px 12px;
-
-  .sub-path-index {
-    margin-right: 10px;
-    flex-shrink: 0;
-  }
 
   .sub-path-preview {
     margin-right: 12px;
@@ -739,6 +794,54 @@ onBeforeUnmount(() => {
       .joystick-up,
       .joystick-down {
         justify-self: center;
+      }
+    }
+
+    .edit-points-container {
+      display: flex;
+      align-items: center;
+
+      .edit-points-btn {
+        width: 22px;
+        height: 22px;
+        border: 1px solid #52c41a;
+        background: #fff;
+        border-radius: 3px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: #52c41a;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: #f6ffed;
+          border-color: #73d13d;
+          color: #73d13d;
+        }
+
+        &:active {
+          background: #d9f7be;
+          border-color: #389e0d;
+          color: #389e0d;
+        }
+
+        &.active {
+          background: #52c41a;
+          border-color: #52c41a;
+          color: #fff;
+
+          &:hover {
+            background: #73d13d;
+            border-color: #73d13d;
+          }
+
+          &:active {
+            background: #389e0d;
+            border-color: #389e0d;
+          }
+        }
       }
     }
 

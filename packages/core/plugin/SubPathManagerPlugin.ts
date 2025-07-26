@@ -426,6 +426,18 @@ export default class SubPathManagerPlugin implements IPluginTempl {
     if (!subPath || !this.state.originalObject) return;
 
     this.clearHighlights();
+    
+    // Store the previous selection to detect changes
+    const previousSubPath = this.state.selectedSubPath;
+    
+    // Update the selected sub-path
+    this.state.selectedSubPath = subPathId;
+    
+    // If point editing mode is active and we're switching to a different sub-path,
+    // update the editable points to the new sub-path
+    if (this.state.editingMode && previousSubPath !== subPathId) {
+      this.createEditablePointsForSubPath(subPath);
+    }
 
     try {
       const original = this.state.originalObject!;
@@ -453,11 +465,9 @@ export default class SubPathManagerPlugin implements IPluginTempl {
         // Ensure the cloned path maintains all transformations
         this.canvas.add(clonedPath);
         this.state.highlightObjects.push(clonedPath);
-        console.log('Highlighting sub-path:', clonedPath);
-        this.canvas.renderAll();
+                this.canvas.renderAll();
 
         subPath.isHighlighted = true;
-        this.state.selectedSubPath = subPathId;
 
         this.editor.emit('subPathHighlighted', { subPath, highlightObject: clonedPath });
       });
@@ -796,8 +806,7 @@ export default class SubPathManagerPlugin implements IPluginTempl {
       // Re-render the canvas
       this.canvas.requestRenderAll();
 
-      console.log('Updated original path with:', completePath);
-    } catch (error) {
+          } catch (error) {
       console.error('Error updating original object path:', error);
       // Fallback: try to force a complete re-render
       this.canvas.renderAll();
@@ -843,13 +852,7 @@ export default class SubPathManagerPlugin implements IPluginTempl {
         isEmpty: false,
       });
 
-      console.log(
-        'Deleted sub-path:',
-        deletedSubPath.index,
-        'Remaining:',
-        this.state.subPaths.length
-      );
-    } catch (error) {
+          } catch (error) {
       console.error('Error deleting sub-path:', error);
     }
   }
@@ -861,6 +864,55 @@ export default class SubPathManagerPlugin implements IPluginTempl {
       // Update color based on new index
       subPath.color = this.colors[index % this.colors.length];
     });
+  }
+
+  private getObjectSizeWithStroke(object: fabric.Object): fabric.Point {
+    // Exact same function as PolygonModifyPlugin
+    const stroke = new fabric.Point(
+      object.strokeUniform ? 1 / object.scaleX! : 1,
+      object.strokeUniform ? 1 / object.scaleY! : 1
+    ).multiply(object.strokeWidth!);
+    return new fabric.Point(object.width! + stroke.x, object.height! + stroke.y);
+  }
+
+  private createSubPathAnchorWrapper(
+    point: EditablePoint, 
+    fn: fabric.Control['actionHandler']
+  ): fabric.Control['actionHandler'] {
+    // Exact same pattern as PolygonModifyPlugin anchorWrapper
+    return (eventData: MouseEvent, transform: fabric.Transform, x: number, y: number) => {
+      const pathObject = transform.target as fabric.Path;
+      const pathOffset = (pathObject as any).pathOffset || { x: 0, y: 0 };
+      
+      // STEP 1: Calculate absolute point BEFORE modifying the point (like PolygonModifyPlugin)
+      const absolutePoint = fabric.util.transformPoint(
+        new fabric.Point(
+          point.x - pathOffset.x,
+          point.y - pathOffset.y
+        ),
+        pathObject.calcTransformMatrix()
+      );
+      
+      // STEP 2: Execute the action that modifies the point
+      const actionPerformed = fn!(eventData, transform, x, y);
+      
+      // STEP 3: Calculate new relative position AFTER the point was modified
+      const pathObjectBaseSize = this.getObjectSizeWithStroke(pathObject);
+      const newX = (point.x - pathOffset.x) / pathObjectBaseSize.x;
+      const newY = (point.y - pathOffset.y) / pathObjectBaseSize.y;
+      
+      const originX = (newX + 0.5) as any;
+      const originY = (newY + 0.5) as any;
+      
+      // STEP 4: Reposition to keep the object in the same visual position
+      pathObject.setPositionByOrigin(absolutePoint, originX, originY);
+      
+      // STEP 5: Update the path data AFTER repositioning (like PolygonModifyPlugin does after all transformations)
+      this.updateCommandFromPoint(point);
+      this.updateSubPathFromPoints(point.commandId);
+      
+      return actionPerformed;
+    };
   }
 
   private clearState(): void {
@@ -908,10 +960,25 @@ export default class SubPathManagerPlugin implements IPluginTempl {
   }
 
   private clearEditablePoints(): void {
-    // Remove point objects from canvas
-    this.state.pointObjects.forEach((pointObj) => {
-      this.canvas.remove(pointObj);
-    });
+    // Remove controls from the original object
+    if (this.state.originalObject) {
+      const newControls: Record<string, fabric.Control> = {};
+      
+      // Keep only non-subpath controls
+      Object.keys(this.state.originalObject.controls || {}).forEach(key => {
+        if (!key.startsWith('subpath_point_')) {
+          newControls[key] = this.state.originalObject!.controls![key];
+        }
+      });
+      
+                  
+      // Restore original controls
+      this.state.originalObject.controls = Object.keys(newControls).length > 0 ? 
+        newControls : fabric.Object.prototype.controls;
+      
+      this.state.originalObject.set({ objectCaching: true });
+      this.state.originalObject.hasBorders = true; // Restore borders
+    }
 
     // Clear state
     this.state.editablePoints = [];
@@ -929,22 +996,12 @@ export default class SubPathManagerPlugin implements IPluginTempl {
     const controlPairs: ControlPointPair[] = [];
 
     // Debug: Log original object properties
-    console.log('Original object properties:', {
-      left: this.state.originalObject?.left,
-      top: this.state.originalObject?.top,
-      width: this.state.originalObject?.width,
-      height: this.state.originalObject?.height,
-      scaleX: this.state.originalObject?.scaleX,
-      scaleY: this.state.originalObject?.scaleY,
-      pathOffset: (this.state.originalObject as any)?.pathOffset,
-      path: this.state.originalObject?.path?.slice(0, 5) // First 5 path commands
-    });
-
+    
     // Get the original path coordinates (without transformations)
     const originalCoords = this.getOriginalPathCoordinates(subPath);
 
     subPath.commands.forEach((command, commandIndex) => {
-      const commandId = command.id || `cmd_${commandIndex}`;
+      const commandId = command.id || `${subPath.id}_cmd_${commandIndex}`;
       command.id = commandId; // Ensure command has ID
 
       // Use original coordinates if available, otherwise fall back to command coords
@@ -1224,77 +1281,96 @@ export default class SubPathManagerPlugin implements IPluginTempl {
     const originalObj = this.state.originalObject;
     if (!originalObj) return;
 
-    console.log('Creating points for object:', {
-      left: originalObj.left,
-      top: originalObj.top,
-      width: originalObj.width,
-      height: originalObj.height,
-      scaleX: originalObj.scaleX,
-      scaleY: originalObj.scaleY,
-      angle: originalObj.angle,
-      originX: originalObj.originX,
-      originY: originalObj.originY,
-    });
-
-    // Use the same cloning approach as highlightSubPath
-    originalObj.clone((clonedPath: fabric.Path) => {
-      console.log('Cloned path properties:', {
-        left: clonedPath.left,
-        top: clonedPath.top,
-        cacheTranslationX: (clonedPath as any).cacheTranslationX,
-        cacheTranslationY: (clonedPath as any).cacheTranslationY,
-        ownMatrixCache: (clonedPath as any).ownMatrixCache,
-        scaleX: clonedPath.scaleX,
-        scaleY: clonedPath.scaleY,
-        angle: clonedPath.angle,
+    // USE FABRIC.JS CONTROLS APPROACH like PolygonModifyPlugin
+    // This avoids all event propagation and selection issues
+    
+    const controls: Record<string, fabric.Control> = {};
+    
+    this.state.editablePoints.forEach((point, index) => {
+      const controlKey = `subpath_point_${point.id}`;
+      
+      controls[controlKey] = new fabric.Control({
+        // Position handler: calculate where the control should appear
+        positionHandler: (dim, finalMatrix, fabricObject) => {
+          // Use the same calculation as PolygonModifyPlugin
+          const pathOffset = (fabricObject as any).pathOffset || { x: 0, y: 0 };
+          const x = point.x - pathOffset.x;
+          const y = point.y - pathOffset.y;
+          
+          return fabric.util.transformPoint(
+            new fabric.Point(x, y),
+            fabric.util.multiplyTransformMatrices(
+              fabricObject.canvas.viewportTransform,
+              fabricObject.calcTransformMatrix()
+            )
+          );
+        },
+        
+        // ActionHandler that dynamically finds the correct point to modify
+        actionHandler: (eventData, transform, x, y) => {
+          // PURE actionHandler like PolygonModifyPlugin - only modify the point
+          const pathObject = transform.target as fabric.Path;
+          const mouseLocalPosition = pathObject.toLocalPoint(new fabric.Point(x, y), 'center', 'center');
+          const pathObjectBaseSize = this.getObjectSizeWithStroke(pathObject);
+          const size = pathObject._getTransformedDimensions(0, 0);
+          const pathOffset = (pathObject as any).pathOffset || { x: 0, y: 0 };
+          
+          // CRITICAL FIX: Find the current point dynamically, not the captured reference
+          const currentPoint = this.state.editablePoints.find(p => p.id === point.id);
+          if (!currentPoint) {
+            console.warn('Point not found in current editable points:', point.id);
+            return false;
+          }
+          
+                    
+          // Only modify the point coordinates (like polygon.points[index] = ...)
+          const newX = (mouseLocalPosition.x * pathObjectBaseSize.x) / size.x + pathOffset.x;
+          const newY = (mouseLocalPosition.y * pathObjectBaseSize.y) / size.y + pathOffset.y;
+          
+                    
+          currentPoint.x = newX;
+          currentPoint.y = newY;
+          
+          // Update the path data immediately like polygons update their points array
+          this.updateCommandFromPoint(currentPoint);
+          this.updateSubPathFromPoints(currentPoint.commandId);
+          
+          return true;
+        },
+        
+        // Render function: how the control looks
+        render: (ctx, left, top, styleOverride, fabricObject) => {
+          const radius = point.type === 'anchor' ? 6 : 4;
+          const fillColor = this.getPointColor(point.type);
+          const strokeColor = point.type === 'anchor' ? '#1890ff' : '#ff7875';
+          
+          ctx.save();
+          ctx.fillStyle = fillColor;
+          ctx.strokeStyle = strokeColor;
+          ctx.lineWidth = 2;
+          
+          ctx.beginPath();
+          ctx.arc(left, top, radius, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        },
+        
+        actionName: 'modifySubPath',
+        cursorStyle: 'move',
       });
-
-      this.state.editablePoints.forEach((point, index) => {
-        console.log(`Point ${index}:`, { id: point.id, x: point.x, y: point.y, type: point.type });
-
-        // Use the cloned path's transformation matrix to calculate point position
-        const transformedPoint = this.transformPointUsingClonedPath(point, clonedPath);
-
-        console.log(`Transformed point coordinates:`, transformedPoint);
-
-        const pointObj = new fabric.Circle({
-          left: transformedPoint.x,
-          top: transformedPoint.y,
-          radius: point.type === 'anchor' ? 6 : 4,
-          fill: this.getPointColor(point.type),
-          stroke: point.type === 'anchor' ? '#1890ff' : '#ff7875',
-          strokeWidth: 2,
-          selectable: true,
-          evented: true,
-          originX: 'center',
-          originY: 'center',
-          excludeFromExport: true,
-          hoverCursor: 'move',
-          moveCursor: 'move',
-        });
-
-        // Store reference to the point data
-        (pointObj as any).editablePointId = point.id;
-
-        // Add event listeners for point interaction
-        pointObj.on('mousedown', () => {
-          this.selectEditablePoint(point.id);
-        });
-
-        pointObj.on('moving', (e) => {
-          const obj = e.target as fabric.Circle;
-          this.handlePointMove(point.id, obj.left!, obj.top!);
-        });
-
-        // Ensure point coordinates are properly set
-        pointObj.setCoords();
-
-        this.canvas.add(pointObj);
-        this.state.pointObjects.push(pointObj);
-      });
-
-      this.canvas.renderAll();
+      
+      // Store point reference in the control
+      (controls[controlKey] as any).subPathPoint = point;
     });
+        
+    // Apply controls to the original object
+    originalObj.controls = { ...originalObj.controls, ...controls };
+    originalObj.set({ objectCaching: false });
+    originalObj.hasBorders = false; // Hide borders during editing
+    
+        
+    this.canvas.renderAll();
   }
 
   private transformPointUsingClonedPath(
@@ -1315,15 +1391,11 @@ export default class SubPathManagerPlugin implements IPluginTempl {
           
           // Check if this path command matches our point coordinates (with some tolerance)
           if (Math.abs(cmdX - point.x) < 0.1 && Math.abs(cmdY - point.y) < 0.1) {
-            console.log(`Found matching path command at index ${i}: [${cmdType}, ${cmdX}, ${cmdY}]`);
-            
+                        
             // CORRECTED APPROACH: PathOffset is center point, not top-left
-            console.log(`Raw path coordinates: (${cmdX}, ${cmdY})`);
-            
+                        
             const pathOffset = (clonedPath as any).pathOffset || { x: 0, y: 0 };
-            console.log(`Path offset: (${pathOffset.x}, ${pathOffset.y})`);
-            console.log(`Path dimensions: ${clonedPath.width}x${clonedPath.height}`);
-            
+                                    
             // PathOffset appears to be the center point of the path's bounding box
             // So we need to convert from center-based to top-left-based coordinates
             const halfWidth = clonedPath.width! / 2;
@@ -1333,13 +1405,11 @@ export default class SubPathManagerPlugin implements IPluginTempl {
             const topLeftX = pathOffset.x - halfWidth;
             const topLeftY = pathOffset.y - halfHeight;
             
-            console.log(`Calculated top-left: (${topLeftX}, ${topLeftY})`);
-            
+                        
             // Now convert path coordinates to relative coordinates (0-1 range)
             const relativeX = (cmdX - topLeftX) / clonedPath.width!;
             const relativeY = (cmdY - topLeftY) / clonedPath.height!;
-            console.log(`Relative coords: (${relativeX}, ${relativeY})`);
-            
+                        
             // Apply relative coordinates to the scaled and positioned path
             const scaledWidth = clonedPath.width! * clonedPath.scaleX!;
             const scaledHeight = clonedPath.height! * clonedPath.scaleY!;
@@ -1352,9 +1422,7 @@ export default class SubPathManagerPlugin implements IPluginTempl {
             const finalX = objCenterX - (scaledWidth / 2) + (relativeX * scaledWidth);
             const finalY = objCenterY - (scaledHeight / 2) + (relativeY * scaledHeight);
             
-            console.log(`Object center: (${objCenterX}, ${objCenterY})`);
-            console.log(`Final coordinates: (${finalX}, ${finalY})`);
-            
+                                    
             return {
               x: finalX,
               y: finalY,
@@ -1365,8 +1433,7 @@ export default class SubPathManagerPlugin implements IPluginTempl {
     }
     
     // FALLBACK: If no direct match found in path array, try the original PolygonModifyPlugin approach
-    console.log('No direct path match found, using polygon-style transformation');
-    
+        
     const pathOffset = (clonedPath as any).pathOffset || { x: 0, y: 0 };
     const adjustedX = point.x - pathOffset.x;
     const adjustedY = point.y - pathOffset.y;
@@ -1432,6 +1499,9 @@ export default class SubPathManagerPlugin implements IPluginTempl {
     const point = this.state.editablePoints.find((p) => p.id === pointId);
     if (!point) return;
 
+    // Preserve the original path selection
+    const originalSelection = this.canvas.getActiveObject();
+    
     // Update selection state
     const prevSelected = this.state.selectedPoint;
     this.state.selectedPoint = pointId;
@@ -1449,6 +1519,11 @@ export default class SubPathManagerPlugin implements IPluginTempl {
         });
       }
     });
+
+    // Restore the original path selection if it was lost
+    if (originalSelection && originalSelection !== this.canvas.getActiveObject()) {
+      this.canvas.setActiveObject(originalSelection);
+    }
 
     this.canvas.renderAll();
 
@@ -1482,10 +1557,19 @@ export default class SubPathManagerPlugin implements IPluginTempl {
     const originalObj = this.state.originalObject;
     if (!originalObj) return;
 
+    // Preserve the original path selection during point movement
+    const currentSelection = this.canvas.getActiveObject();
+    
     // Convert canvas coordinates back to path coordinates
     const pathCoords = this.inverseTransformPointCoordinates(canvasX, canvasY, originalObj);
 
     this.moveEditablePoint(pointId, pathCoords.x, pathCoords.y);
+    
+    // Restore selection if it was lost during movement
+    if (currentSelection && currentSelection === originalObj && 
+        this.canvas.getActiveObject() !== originalObj) {
+      this.canvas.setActiveObject(originalObj);
+    }
   }
 
   private inverseTransformPointCoordinates(
@@ -1594,11 +1678,31 @@ export default class SubPathManagerPlugin implements IPluginTempl {
   }
 
   private updateCommandFromPoint(point: EditablePoint): void {
-    const subPath = this.state.subPaths.find((sp) =>
-      sp.commands.some((cmd) => cmd.id === point.commandId)
-    );
+    // First try to use the currently selected sub-path
+    let subPath = this.state.subPaths.find((sp) => sp.id === this.state.selectedSubPath);
+    
+    // If no selected sub-path or command not found, extract sub-path ID from command ID
+    if (!subPath || !subPath.commands.some((cmd) => cmd.id === point.commandId)) {
+      // Extract sub-path ID from command ID (format: subPathId_cmd_index)
+      const subPathId = point.commandId.split('_cmd_')[0];
+      subPath = this.state.subPaths.find((sp) => sp.id === subPathId);
+      
+      // Update the selected sub-path state to keep it in sync
+      if (subPath) {
+                this.state.selectedSubPath = subPath.id;
+      }
+    }
+    
+    if (!subPath) {
+      console.warn('No sub-path found for point update:', point.commandId);
+      return;
+    }
 
-    if (!subPath) return;
+    // Ensure the command exists in the sub-path
+    if (!subPath.commands.some((cmd) => cmd.id === point.commandId)) {
+      console.warn('Command not found in sub-path:', point.commandId, 'in sub-path:', subPath.id);
+      return;
+    }
 
     const command = subPath.commands[point.commandIndex];
     if (!command) return;
@@ -1661,11 +1765,31 @@ export default class SubPathManagerPlugin implements IPluginTempl {
   }
 
   private updateSubPathFromPoints(commandId: string): void {
-    const subPath = this.state.subPaths.find((sp) =>
-      sp.commands.some((cmd) => cmd.id === commandId)
-    );
+    // First try to use the currently selected sub-path
+    let subPath = this.state.subPaths.find((sp) => sp.id === this.state.selectedSubPath);
+    
+    // If no selected sub-path or command not found, extract sub-path ID from command ID
+    if (!subPath || !subPath.commands.some((cmd) => cmd.id === commandId)) {
+      // Extract sub-path ID from command ID (format: subPathId_cmd_index)
+      const subPathId = commandId.split('_cmd_')[0];
+      subPath = this.state.subPaths.find((sp) => sp.id === subPathId);
+      
+      // Update the selected sub-path state to keep it in sync
+      if (subPath) {
+                this.state.selectedSubPath = subPath.id;
+      }
+    }
+    
+    if (!subPath) {
+      console.warn('No sub-path found for update:', commandId);
+      return;
+    }
 
-    if (!subPath) return;
+    // Verify the command exists in the sub-path
+    if (!subPath.commands.some((cmd) => cmd.id === commandId)) {
+      console.warn('Command not found in sub-path for update:', commandId, 'in sub-path:', subPath.id);
+      return;
+    }
 
     // Regenerate path data string from updated commands
     subPath.pathData = this.commandsToPathData(subPath.commands);
